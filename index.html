@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="民宿推广">
+    <meta name="format-detection" content="telephone=no">
+    <title>民宿 AI 平台提交助手</title>
+    <link rel="stylesheet" href="style.css?v=12">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0a0a">
+    <!-- 添加到主屏幕的图标 -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏡</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏡</text></svg>">
+    <!-- 二维码生成（轻量纯 JS，主备双 CDN，加载失败会自动降级显示链接） -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/qrcode-generator@1.4.4/qrcode.js';document.head.appendChild(s);"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-actions">
+                <button type="button" id="themeToggleBtn" class="header-icon-btn" title="切换暗色 / 浅色模式" aria-label="切换主题">
+                    <span class="theme-icon-light">☀️</span>
+                    <span class="theme-icon-dark">🌙</span>
+                </button>
+                <div class="header-menu-wrap">
+                    <button type="button" id="headerMenuBtn" class="header-icon-btn" title="档案、提交记录、AI 配置" aria-label="更多" aria-haspopup="true" aria-expanded="false">
+                        ⚙️
+                    </button>
+                    <div id="headerMenu" class="header-menu" role="menu" aria-hidden="true">
+                        <button type="button" class="header-menu-item" id="profilesBtn" role="menuitem">
+                            <span class="header-menu-icon">📁</span>
+                            <span class="header-menu-text">
+                                <strong>民宿档案</strong>
+                                <small>切换 / 管理多家民宿</small>
+                            </span>
+                        </button>
+                        <button type="button" class="header-menu-item" id="recordsBtn" role="menuitem">
+                            <span class="header-menu-icon">📊</span>
+                            <span class="header-menu-text">
+                                <strong>提交记录</strong>
+                                <small>已记录 <span id="recordsCount" class="badge-inline">0</span></small>
+                            </span>
+                        </button>
+                        <button type="button" class="header-menu-item" id="aiConfigBtn" role="menuitem">
+                            <span class="header-menu-icon">🤖</span>
+                            <span class="header-menu-text">
+                                <strong>AI 配置</strong>
+                                <small>当前: <span id="aiStatusText">内建免配置</span></small>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <h1>🏡 民宿 AI 平台提交助手</h1>
+            <p class="subtitle">一键生成优化文案 + 跳转各大 AI 平台官方反馈入口</p>
+            <p class="draft-tip" id="draftTip" style="display:none">
+                ✏️ 已自动加载上次未提交的草稿
+                <button type="button" id="clearDraftBtn" class="link-btn">清除草稿</button>
+            </p>
+        </header>
+
+        <main>
+            <!-- Sticky 步骤进度条 -->
+            <nav class="step-nav" id="stepNav" aria-label="表单进度">
+                <a href="#stepBasic" class="step-nav-item active" data-step="1">
+                    <span class="step-num">1</span>
+                    <span class="step-label">基本信息</span>
+                </a>
+                <a href="#stepMedia" class="step-nav-item" data-step="2">
+                    <span class="step-num">2</span>
+                    <span class="step-label">素材<small>·可选</small></span>
+                </a>
+                <a href="#stepPlatform" class="step-nav-item" data-step="3">
+                    <span class="step-num">3</span>
+                    <span class="step-label">选渠道</span>
+                </a>
+                <a href="#stepGenerate" class="step-nav-item" data-step="4">
+                    <span class="step-num">4</span>
+                    <span class="step-label">生成</span>
+                </a>
+            </nav>
+
+            <details class="notice-box notice-box-collapsible">
+                <summary class="notice-summary">
+                    <span class="notice-summary-icon">💡</span>
+                    <span class="notice-summary-text">
+                        本工具<strong>不会自动推送</strong> — 它做两件事:① 生成各平台喜欢的文案 ② 给你官方入口直达
+                    </span>
+                    <span class="notice-summary-toggle">展开详细 ▾</span>
+                </summary>
+                <div class="notice-body">
+                    <p>
+                        豆包/千问/元宝/Kimi/文心/智谱<strong>都没有公开"内容收录"接口</strong>，任何工具（包括本站）
+                        都无法直接把民宿信息塞进 AI 的知识库。
+                    </p>
+                    <p style="margin-top:8px">本工具做的是两件<strong>真正有用</strong>的事：</p>
+                    <ol class="notice-steps">
+                        <li>按各平台喜欢的格式，自动生成一份优化好的提交文案</li>
+                        <li>给出每个平台的<strong>官方反馈入口</strong>直达链接，你点开复制粘贴即可</li>
+                    </ol>
+                    <p style="margin-top:8px;color:var(--text-tertiary);font-size:.9em">
+                        平台审核周期通常 1–4 周，成功率约 30–70%（百度/阿里系最高）。
+                    </p>
+                </div>
+            </details>
+
+            <!-- 当前档案条（多民宿场景下显示） -->
+            <div id="profileBar" class="profile-bar" style="display:none">
+                <span class="profile-bar-label">📁 当前档案</span>
+                <strong id="profileBarName" class="profile-bar-name">默认档案</strong>
+                <span class="profile-bar-count" id="profileBarCount"></span>
+                <button type="button" id="profileBarManage" class="profile-bar-btn">切换 / 管理 →</button>
+            </div>
+
+            <form id="submitForm">
+                <!-- 第一步：基本信息 -->
+                <section class="form-section" id="stepBasic" data-step="1">
+                    <header class="form-section-head">
+                        <span class="form-section-num">1</span>
+                        <div>
+                            <h2 class="form-section-title">基本信息</h2>
+                            <p class="form-section-sub">5 个字段，约 1 分钟</p>
+                        </div>
+                    </header>
+
+                    <div class="form-group">
+                        <label for="hostelName1">民宿名称 <span class="req">必填</span></label>
+                        <input type="text" id="hostelName1" required placeholder="例如：山水间民宿">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hostelName2">第二家民宿名称 <span class="opt">选填</span></label>
+                        <input type="text" id="hostelName2" placeholder="例如：云端小院（若有第二家，可一起推广）">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">所在位置 <span class="req">必填</span></label>
+                        <input type="text" id="location" required placeholder="例如：浙江杭州西湖区龙井村">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">价格区间 <span class="opt">选填</span></label>
+                        <input type="text" id="price" placeholder="例如：300-800 元/晚">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-label-row">
+                            <label for="description">民宿特色介绍 <span class="req">必填</span></label>
+                            <button type="button" id="descPolishBtn" class="btn-inline-ai" title="把口语化描述自动扩写成专业卖点（内建 AI 免配置）">
+                                ✨ AI 润色
+                            </button>
+                        </div>
+                        <textarea id="description" required rows="5" placeholder="例如：&#10;- 环境特点（山景/湖景/古镇等）&#10;- 房间设施（独立卫浴/智能家居等）&#10;- 特色服务（早餐/接送/活动等）&#10;&#10;不会写？直接写「有山有水有早餐」，点右上 ✨AI 润色 自动扩写。"></textarea>
+                        <small class="form-tip">
+                            💡 写不好没关系，点 <strong>✨AI 润色</strong>(免配置可用)让 AI 帮你扩写成专业卖点。
+                        </small>
+
+                        <div id="descPolishPanel" class="polish-panel" style="display:none">
+                            <div class="polish-panel-head">
+                                <span class="polish-head-title">✨ AI 润色</span>
+                                <div class="polish-style-switch" role="group" aria-label="润色风格">
+                                    <button type="button" class="polish-style-btn active" data-style="pro">💼 专业卖点</button>
+                                    <button type="button" class="polish-style-btn" data-style="warm">🌸 温馨故事</button>
+                                    <button type="button" class="polish-style-btn" data-style="data">📊 数据信任</button>
+                                </div>
+                                <button type="button" id="descPolishClose" class="polish-close" aria-label="关闭">×</button>
+                            </div>
+
+                            <div id="descPolishStatus" class="polish-status" style="display:none"></div>
+
+                            <div id="descPolishResult" class="polish-result" style="display:none">
+                                <pre id="descPolishText" class="polish-text"></pre>
+                                <div class="polish-actions">
+                                    <button type="button" id="descPolishApply" class="btn-primary">✅ 应用到表单</button>
+                                    <button type="button" id="descPolishRedo" class="btn-secondary">🔄 换一版</button>
+                                    <button type="button" id="descPolishCancel" class="btn-link">取消</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact">联系方式 <span class="req">必填</span></label>
+                        <input type="text" id="contact" required placeholder="微信号 / 电话 / 预订链接">
+                    </div>
+                </section>
+
+                <!-- 第二步：媒体内容(默认折叠) -->
+                <details class="form-section form-section-collapsible" id="stepMedia" data-step="2">
+                    <summary class="form-section-head form-section-summary">
+                        <span class="form-section-num">2</span>
+                        <div>
+                            <h2 class="form-section-title">添加宣传素材 <span class="opt">可选</span></h2>
+                            <p class="form-section-sub">有视频/图片/笔记链接可填上，可大幅提升收录率 · 没有可跳过</p>
+                        </div>
+                        <span class="form-section-toggle">展开 ▾</span>
+                    </summary>
+
+                    <div class="form-section-body">
+                        <div class="form-group">
+                            <label for="videoLinks">📹 视频链接 <span class="opt">选填</span></label>
+                            <textarea id="videoLinks" rows="3" placeholder="每行一个，支持抖音 / 小红书 / B站 / 视频号"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="imageLinks">🖼️ 图片链接 <span class="opt">选填</span></label>
+                            <textarea id="imageLinks" rows="3" placeholder="每行一个，建议图床或社交平台图片直链"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="noteLinks">📄 笔记 / 文章链接 <span class="opt">选填</span></label>
+                            <textarea id="noteLinks" rows="3" placeholder="小红书笔记、公众号文章、游记等"></textarea>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 第三步：选择平台 -->
+                <section class="form-section" id="stepPlatform" data-step="3">
+                    <header class="form-section-head">
+                        <span class="form-section-num">3</span>
+                        <div>
+                            <h2 class="form-section-title">选择要生成的渠道</h2>
+                            <p class="form-section-sub">每个勾选的渠道单独生成文案 + 入口链接（建议全选）</p>
+                        </div>
+                    </header>
+
+                    <!-- AI 平台 vs 社交平台 对比卡 -->
+                    <div class="channel-compare">
+                        <div class="channel-compare-card">
+                            <div class="channel-compare-head">
+                                <span class="channel-compare-emoji">🤖</span>
+                                <span class="channel-compare-title">AI 平台</span>
+                                <span class="channel-compare-tag tag-okay">效果一般</span>
+                            </div>
+                            <ul class="channel-compare-list">
+                                <li><span>成功率</span><strong>30 - 70%</strong></li>
+                                <li><span>生效</span><strong>1 - 4 周</strong></li>
+                                <li><span>本质</span><strong>手动反馈入口，间接收录</strong></li>
+                            </ul>
+                            <p class="channel-compare-note">值得做，但别期望太高</p>
+                        </div>
+                        <div class="channel-compare-vs">VS</div>
+                        <div class="channel-compare-card channel-compare-recommend">
+                            <div class="channel-compare-head">
+                                <span class="channel-compare-emoji">📱</span>
+                                <span class="channel-compare-title">社交 / 本地生活</span>
+                                <span class="channel-compare-tag tag-good">强烈推荐 ⭐</span>
+                            </div>
+                            <ul class="channel-compare-list">
+                                <li><span>成功率</span><strong>≈ 99%</strong></li>
+                                <li><span>生效</span><strong>立即</strong></li>
+                                <li><span>本质</span><strong>AI 训练数据池（抖音/百度/点评/携程）</strong></li>
+                            </ul>
+                            <p class="channel-compare-note">实际效果比 AI 平台强 10 倍</p>
+                        </div>
+                    </div>
+
+                    <h3 class="platform-group-title">🤖 AI 平台</h3>
+                    <div class="platform-grid">
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="platform" value="doubao" checked>
+                            <span>🤖 豆包</span>
+                        </label>
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="platform" value="qianwen" checked>
+                            <span>💬 千问</span>
+                        </label>
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="platform" value="yuanbao" checked>
+                            <span>💎 元宝</span>
+                        </label>
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="platform" value="kimi" checked>
+                            <span>🌙 Kimi</span>
+                        </label>
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="platform" value="wenxin" checked>
+                            <span>🎨 文心一言</span>
+                        </label>
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="platform" value="chatglm" checked>
+                            <span>🧠 智谱清言</span>
+                        </label>
+                    </div>
+
+                    <h3 class="platform-group-title">📱 社交 / 本地生活平台</h3>
+                    <div class="platform-grid">
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="social" value="xhs" checked>
+                            <span>📕 小红书</span>
+                        </label>
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="social" value="dy" checked>
+                            <span>🎵 抖音</span>
+                        </label>
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="social" value="wx" checked>
+                            <span>📰 公众号</span>
+                        </label>
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="social" value="dzdp" checked>
+                            <span>🗺️ 大众点评</span>
+                        </label>
+                        <label class="platform-checkbox">
+                            <input type="checkbox" name="social" value="ctrip" checked>
+                            <span>✈️ 携程</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- 第四步：生成按钮（普通位置 + sticky 浮动两份） -->
+                <section class="form-section form-section-actions" id="stepGenerate" data-step="4">
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" id="previewBtn">👁️ 预览通用文案</button>
+                        <button type="submit" class="btn-primary btn-generate-main">📝 生成提交文案与入口  →</button>
+                    </div>
+                </section>
+            </form>
+
+            <!-- Sticky 浮动生成按钮（滚动时屏幕底部固定显示） -->
+            <div id="stickyGenerate" class="sticky-generate" style="display:none">
+                <button type="button" class="btn-primary sticky-generate-btn" id="stickyGenerateBtn">
+                    📝 生成提交文案与入口  →
+                </button>
+                <span class="sticky-generate-hint" id="stickyGenerateHint"></span>
+            </div>
+
+            <!-- 结果显示区域 -->
+            <div id="resultSection" class="result-section" style="display: none;">
+                <div class="tabs">
+                    <button type="button" class="tab-btn active" data-tab="platforms">🎯 AI 平台清单</button>
+                    <button type="button" class="tab-btn" data-tab="social">📱 社交平台爆文</button>
+                </div>
+
+                <!-- Tab 1: AI 平台清单 -->
+                <div class="tab-pane active" data-pane="platforms">
+                    <p class="result-intro">
+                        每张卡片对应一个 AI 平台：复制文案 → 扫二维码（电脑端）或点链接打开官网 → 在 APP 反馈入口粘贴提交。
+                        提交后点击"标记为已提交"会写入下方记录台账。
+                    </p>
+                    <div id="platformCards" class="platform-cards"></div>
+                    <div id="summaryContent" class="summary-content"></div>
+                </div>
+
+                <!-- Tab 2: 社交平台爆文 -->
+                <div class="tab-pane" data-pane="social">
+                    <p class="result-intro">
+                        <strong>真正的"间接植入"在这里。</strong>
+                        豆包训练数据大量来自头条系（抖音）、文心来自百度系、千问来自阿里系；
+                        而<strong>大众点评 / 携程</strong>作为本地生活与 OTA 数据池，是 AI 回答"XX 哪里住"类问题的高频引用源。
+                        持续在这些平台发布 / 完善内容，比向 AI 反馈入口提交有效 10 倍。
+                        每张卡片会按该平台规则<strong>自动审查违禁词</strong>，复制到的就是安全文案。
+                    </p>
+
+                    <!-- 小红书爆文智能改写器 -->
+                    <details class="xhs-rewriter" id="xhsRewriter" open>
+                        <summary>
+                            <span class="rewriter-title-emoji">📕</span>
+                            <span class="rewriter-title-main">小红书爆文「智能改写器」</span>
+                            <span class="rewriter-title-sub">把别人的爆款笔记 → 改写成你自己的笔记，多次刷新出多版</span>
+                        </summary>
+
+                        <div class="rewriter-body">
+                            <!-- 模式切换 -->
+                            <div class="rewrite-mode-switch">
+                                <button type="button" id="rewriteModeLocal" class="mode-btn">
+                                    🌿 <strong>本地词库</strong>
+                                    <span class="mode-tag">免费 · 离线</span>
+                                </button>
+                                <button type="button" id="rewriteModeAi" class="mode-btn">
+                                    🤖 <strong>AI 改写</strong>
+                                    <span class="mode-tag">联网 · 需 API key</span>
+                                </button>
+                            </div>
+
+                            <!-- AI 模式专用：API key 状态条 -->
+                            <div id="xhsAiKeyBar" class="ai-key-bar" style="display:none">
+                                <span class="ai-key-icon">🔐</span>
+                                <span id="xhsAiKeySummary" class="ai-key-summary">⚠️ 还没配置 API key</span>
+                            </div>
+
+                            <p class="rewriter-warn">
+                                � <strong>两种模式怎么选</strong>：<br>
+                                · 🌿 <strong>本地词库</strong>：完全免费、不联网、规则化伪原创，质量中等。<br>
+                                · 🤖 <strong>AI 改写</strong>：调真大模型（智谱免费 / DeepSeek / Kimi），质量高，<u>支持粘贴链接自动抓取</u>（通过 Jina Reader）。<br>
+                                key 只存你自己浏览器，<u>不会上传任何服务器</u>。
+                            </p>
+
+                            <div class="rewriter-form">
+                                <label class="rewriter-label" for="xhsSourceUrl">
+                                    🔗 笔记链接 <span class="req-hint">（AI 模式下会自动抓取）</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    id="xhsSourceUrl"
+                                    class="rewriter-input"
+                                    placeholder="https://www.xiaohongshu.com/explore/xxx 或 https://xhslink.com/xxx"
+                                />
+
+                                <label class="rewriter-label" for="xhsSourceText">
+                                    📋 粘贴原笔记正文 <span class="req-hint">（AI 模式可留空，本地模式必填）</span>
+                                </label>
+                                <textarea
+                                    id="xhsSourceText"
+                                    class="rewriter-textarea"
+                                    rows="6"
+                                    placeholder="把对方笔记正文整段复制进来，越完整改写越准。&#10;Tip：标题单独放第一行，效果最佳。&#10;AI 模式下：填了 URL 会自动抓取，这里可以留空。"
+                                ></textarea>
+
+                                <div class="rewriter-actions">
+                                    <button type="button" id="xhsRewriteBtn" class="btn-primary">
+                                        ✨ 一键改写
+                                    </button>
+                                    <button type="button" id="xhsRewriteRefreshBtn" class="btn-secondary" disabled>
+                                        🔄 再洗一版
+                                    </button>
+                                    <button type="button" id="xhsRewriteClearBtn" class="btn-link">
+                                        🗑 清空
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 状态/loading 行 -->
+                            <div id="xhsRewriterStatus" class="rewriter-status" style="display:none"></div>
+
+                            <!-- 输出区 -->
+                            <div id="xhsRewriteOutput" class="rewriter-output" style="display:none">
+                                <!-- JS 动态填充：3 个候选标题 + 改写正文 + 推荐 hashtag -->
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- AI 设置模态框 -->
+                    <div id="xhsAiSetupModal" class="ai-setup-modal" style="display:none">
+                        <div class="ai-setup-card">
+                            <button type="button" id="aiSetupClose" class="ai-setup-close" aria-label="关闭">×</button>
+                            <h3>🤖 配置 AI</h3>
+                            <p class="ai-setup-intro">
+                                默认使用<strong>内建 AI（免配置）</strong>，直接可用。如需更稳定或私有 key，可切换到下方自费选项。
+                            </p>
+
+                            <label class="ai-setup-label" for="aiSetupProvider">1. 选 AI 提供商</label>
+                            <select id="aiSetupProvider" class="ai-setup-select">
+                                <option value="builtin">🎁 内建 AI · 免配置（推荐）</option>
+                                <option value="glm">智谱 GLM-4-Flash · 🟢 完全免费</option>
+                                <option value="deepseek">DeepSeek · 💸 ¥1/百万 token</option>
+                                <option value="moonshot">Moonshot Kimi · 💸 ¥12/百万 token</option>
+                            </select>
+                            <p id="aiSetupDesc" class="ai-setup-desc"></p>
+                            <p class="ai-setup-link" id="aiSetupLinkRow">
+                                👉 <a id="aiSetupSignup" href="#" target="_blank" rel="noopener noreferrer">去申请 API key</a>
+                                （注册后到「API Keys」页面创建一条，复制完整字符串）
+                            </p>
+
+                            <div id="aiSetupKeyRow">
+                                <label class="ai-setup-label" for="aiSetupKey">2. 粘贴你的 API key</label>
+                                <input
+                                    id="aiSetupKey"
+                                    type="password"
+                                    class="ai-setup-input"
+                                    autocomplete="off"
+                                    spellcheck="false"
+                                />
+                                <p class="ai-setup-tip">🔒 仅保存到本机浏览器 localStorage（你随时可以清除）。</p>
+                            </div>
+
+                            <div id="aiSetupStatus" class="ai-setup-status"></div>
+
+                            <div class="ai-setup-actions">
+                                <button type="button" id="aiSetupTest" class="btn-secondary">🔌 测试连接</button>
+                                <button type="button" id="aiSetupSave" class="btn-primary">💾 保存</button>
+                                <button type="button" id="aiSetupCancel" class="btn-link">取消</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 小红书爆款公式速查 -->
+                    <details class="xhs-formulas" id="xhsFormulas">
+                        <summary>
+                            <span class="rewriter-title-emoji">🔥</span>
+                            <span class="rewriter-title-main">小红书爆款标题 & 笔记 8 大公式速查</span>
+                            <span class="rewriter-title-sub">写完先对一对，命中越多越容易上推荐</span>
+                        </summary>
+                        <div id="xhsFormulasBody" class="formulas-body">
+                            <!-- JS 动态填充 -->
+                        </div>
+                    </details>
+
+                    <h3 class="social-section-title">🎯 基于你表单内容的多平台爆文</h3>
+                    <div id="socialCards" class="social-cards"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>本工具仅生成文案与跳转入口，不会以你的名义自动提交任何内容。</p>
+        </footer>
+    </div>
+
+    <!-- 预览模态框 -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>内容预览</h2>
+            <div id="previewContent" class="preview-content"></div>
+            <button class="btn-primary" id="closePreview">关闭</button>
+        </div>
+    </div>
+
+    <!-- 多民宿档案管理 -->
+    <div id="profilesModal" class="modal">
+        <div class="modal-content modal-content-wide">
+            <span class="close" data-close="profilesModal">&times;</span>
+            <h2>📁 民宿档案管理</h2>
+            <p class="result-intro">
+                可以保存多家民宿档案，一键切换。每次切换时<strong>当前表单内容会自动保存</strong>到对应档案。
+                所有数据仅存在你的浏览器，可随时导出 JSON 备份/同步到其他设备。
+            </p>
+
+            <div class="profiles-toolbar">
+                <button type="button" id="profileNewBtn" class="btn-primary">➕ 新建档案</button>
+                <button type="button" id="profileDupBtn" class="btn-secondary">📋 复制当前档案</button>
+                <button type="button" id="profileImportBtn" class="btn-secondary">📤 导入 JSON</button>
+                <button type="button" id="profileExportBtn" class="btn-secondary">📥 导出全部</button>
+                <input type="file" id="profileImportFile" accept="application/json,.json" style="display:none">
+            </div>
+
+            <div id="profilesList" class="profiles-list">
+                <!-- JS 渲染 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 提交记录台账 -->
+    <div id="recordsModal" class="modal">
+        <div class="modal-content modal-content-wide">
+            <span class="close" data-close="recordsModal">&times;</span>
+            <h2>📊 我的提交记录</h2>
+            <p class="result-intro">
+                每次点击平台卡片"标记为已提交"会写入这里。可在备注里记录平台回复，导出 CSV 用于自己跟进。
+            </p>
+            <div class="records-toolbar">
+                <button type="button" class="btn-secondary" id="exportCsvBtn">📥 导出 CSV</button>
+                <button type="button" class="btn-secondary" id="clearRecordsBtn">🗑️ 清空全部记录</button>
+            </div>
+            <div class="records-table-wrap">
+                <table class="records-table" id="recordsTable">
+                    <thead>
+                        <tr>
+                            <th>提交日期</th>
+                            <th>民宿</th>
+                            <th>平台</th>
+                            <th>状态</th>
+                            <th>备注</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTbody">
+                        <tr><td colspan="6" class="records-empty">暂无记录</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=12"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# 编辑器/系统
+.vscode/
+
+# 本地测试/部署脚本（不上公网）
+test.txt
+*.ps1
+
+# 内部说明文档（含部署指南/手机指南/真实推广方案 等，不公开）
+*.md
+!README.md
+AI平台官方提交渠道.txt
+上传到新仓库.txt
+快速上传指南.txt
+手动部署说明.txt
+手机使用指南.txt
+手机版使用说明-最终版.txt
+最终解决方案.txt
+最终部署说明.txt
+真实推广方案.txt
+网站访问地址.txt
+部署完成-访问地址.txt
+
+# Netlify 相关（这个仓库走 GitHub Pages）
+netlify.toml
+.netlifyignore
