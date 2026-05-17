@@ -3539,6 +3539,222 @@ header {
     }
 }
 
+/* ==========================================================================
+   AI 宣传图生成模块 v14
+   ========================================================================== */
+
+.imggen-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    margin-top: 8px;
+    align-items: stretch;
+}
+
+.imggen-controls,
+.imggen-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 风格按钮组 */
+.img-style-group,
+.img-size-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.img-style-btn,
+.img-size-btn {
+    flex: 0 1 auto;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: .88em;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .15s;
+    line-height: 1.3;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.img-style-btn small,
+.img-size-btn small {
+    font-size: .75em;
+    color: var(--text-tertiary);
+    font-weight: 400;
+}
+
+.img-style-btn:hover,
+.img-size-btn:hover {
+    border-color: var(--border-strong);
+    background: var(--bg-hover);
+}
+
+.img-style-btn.active,
+.img-size-btn.active {
+    background: var(--text);
+    color: var(--text-inverse);
+    border-color: var(--text);
+}
+
+.img-style-btn.active small,
+.img-size-btn.active small {
+    color: rgba(255, 255, 255, .7);
+}
+
+:root[data-theme="dark"] .img-style-btn.active small,
+:root[data-theme="dark"] .img-size-btn.active small {
+    color: rgba(0, 0, 0, .55);
+}
+
+/* 提示文字 */
+.img-tip {
+    font-size: .82em;
+    color: var(--text-tertiary);
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* 预览区(右侧) */
+.img-preview-box {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    background: var(--bg-subtle);
+    border: 1px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: aspect-ratio .2s;
+}
+
+.img-preview-box.size-9-16 { aspect-ratio: 9 / 16; max-height: 70vh; }
+.img-preview-box.size-16-9 { aspect-ratio: 16 / 9; }
+
+.img-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.img-preview-empty .img-preview-placeholder {
+    text-align: center;
+    color: var(--text-tertiary);
+    padding: 24px;
+    line-height: 1.5;
+}
+
+.img-preview-icon {
+    font-size: 3em;
+    display: block;
+    margin-bottom: 12px;
+    opacity: .5;
+}
+
+/* Loading 状态 */
+.img-preview-box.is-loading {
+    border-style: solid;
+    background: var(--bg-subtle);
+}
+
+.img-loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 24px;
+    text-align: center;
+}
+
+.img-loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--text);
+    border-radius: 50%;
+    animation: imgSpin 1s linear infinite;
+}
+
+@keyframes imgSpin {
+    to { transform: rotate(360deg); }
+}
+
+.img-loading-text {
+    font-size: .92em;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.img-loading-sub {
+    font-size: .8em;
+    color: var(--text-tertiary);
+    line-height: 1.5;
+}
+
+/* 错误状态 */
+.img-preview-box.is-error {
+    border-color: var(--danger-border);
+    background: var(--danger-bg);
+}
+
+.img-error-state {
+    text-align: center;
+    padding: 24px;
+    color: var(--danger);
+    font-size: .9em;
+    line-height: 1.55;
+}
+
+.img-error-state strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+}
+
+/* 操作按钮组 */
+.img-preview-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.img-preview-actions .btn-primary,
+.img-preview-actions .btn-secondary {
+    flex: 1 1 auto;
+    min-width: 120px;
+    font-size: .9em;
+}
+
+/* 移动端塌成单列 */
+@media (max-width: 768px) {
+    .imggen-body {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .img-preview-box {
+        max-height: 60vh;
+    }
+    .img-preview-box.size-9-16 {
+        max-height: 65vh;
+    }
+    .img-style-btn,
+    .img-size-btn {
+        padding: 8px 12px;
+        font-size: .85em;
+    }
+}
+
 /* 更小屏(iPhone SE 等 ≤480px)进一步压缩 */
 @media (max-width: 480px) {
     body {

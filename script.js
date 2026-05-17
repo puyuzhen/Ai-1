@@ -3962,6 +3962,293 @@ form.addEventListener('submit', (e) => {
     summaryContent.appendChild(summary);
 });
 
+// ==========================================================================
+// AI 民宿宣传图生成模块 v14
+// 提供商: xiaoji.baziapi.site (OpenAI 兼容代理)
+// 模型: gpt-image-2 (图像生成,只支持图像权限的限额 key)
+// ==========================================================================
+
+const IMAGE_AI_CONFIG = {
+    apiKey: 'sk-jp-kbZutA2C1ISLydNVU5v2hg3wDkk3pIFgmy44cLZ1',
+    endpoint: 'https://xiaoji.baziapi.site/v1/images/generations',
+    model: 'gpt-image-2'
+};
+
+// 风格 → prompt 后缀(英文 prompt 出图更准)
+const IMG_STYLE_SUFFIX = {
+    photo:        ', professional photography, photorealistic, natural lighting, high detail, magazine quality, 8k',
+    illustration: ', watercolor illustration, soft pastel colors, hand-drawn style, cozy warm atmosphere, charming',
+    ink:          ', traditional Chinese ink wash painting, elegant minimal brushstrokes, oriental aesthetic, serene mood',
+    minimal:      ', minimalist flat design, clean composition, soft gradient background, modern aesthetic',
+    cinematic:    ', cinematic lighting, dramatic atmosphere, film still aesthetic, depth of field, golden hour'
+};
+
+async function generateMinsuImage(prompt, opts) {
+    opts = opts || {};
+    const size = opts.size || '1024x1024';
+
+    let resp;
+    try {
+        resp = await fetch(IMAGE_AI_CONFIG.endpoint, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + IMAGE_AI_CONFIG.apiKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: IMAGE_AI_CONFIG.model,
+                prompt: prompt,
+                n: 1,
+                size: size
+            })
+        });
+    } catch (e) {
+        throw new Error('网络错误:' + e.message);
+    }
+
+    if (!resp.ok) {
+        const txt = await resp.text().catch(() => '');
+        if (resp.status === 401) throw new Error('API key 无效或已过期(401)');
+        if (resp.status === 403) throw new Error('当前 key 无图像生成权限(403)');
+        if (resp.status === 429) throw new Error('调用太频繁或额度用完(429)');
+        if (resp.status === 500) throw new Error('服务器内部错误,稍后重试');
+        throw new Error('生成失败 ' + resp.status + ': ' + txt.slice(0, 200));
+    }
+
+    const data = await resp.json();
+    if (data.error) {
+        const msg = typeof data.error === 'string' ? data.error : (data.error.message || '生成失败');
+        throw new Error(msg);
+    }
+    if (!data.data || !data.data[0] || !data.data[0].url) {
+        throw new Error('返回格式异常,没拿到图片地址');
+    }
+    return data.data[0].url;
+}
+
+function buildImagePromptFromForm() {
+    let form = {};
+    try { form = getFormData() || {}; } catch (_) {}
+
+    const parts = [];
+    if (form.location)    parts.push(form.location);
+    if (form.hostelName1) parts.push('called "' + form.hostelName1 + '"');
+    if (form.description) {
+        // 民宿描述取前 100 字,去掉换行
+        const desc = String(form.description).replace(/\s+/g, ' ').trim().slice(0, 100);
+        if (desc) parts.push(desc);
+    }
+
+    if (parts.length === 0) {
+        return 'A cozy Chinese homestay (minsu) with warm interior lighting, traditional architectural details, inviting atmosphere';
+    }
+    return 'A homestay (minsu) located in ' + parts.join(', ') + '; warm inviting atmosphere, golden hour';
+}
+
+function initImageGen() {
+    const modal       = document.getElementById('imageGenModal');
+    const openBtn     = document.getElementById('imageGenBtn');
+    if (!modal || !openBtn) return;
+
+    const closeBtn    = modal.querySelector('[data-close="imageGenModal"]');
+    const promptEl    = document.getElementById('imgPromptText');
+    const fillBtn     = document.getElementById('imgFillFromForm');
+    const styleGroup  = document.getElementById('imgStyleGroup');
+    const sizeGroup   = document.getElementById('imgSizeGroup');
+    const generateBtn = document.getElementById('imgGenerateBtn');
+    const previewBox  = document.getElementById('imgPreviewBox');
+    const actions     = document.getElementById('imgPreviewActions');
+    const downloadBtn = document.getElementById('imgDownloadBtn');
+    const copyUrlBtn  = document.getElementById('imgCopyUrlBtn');
+    const regenBtn    = document.getElementById('imgRegenerateBtn');
+
+    let currentImageUrl = null;
+    let currentStyle    = 'photo';
+    let currentSize     = '1024x1024';
+
+    function sizeClass() {
+        if (currentSize === '1024x1792') return 'size-9-16';
+        if (currentSize === '1792x1024') return 'size-16-9';
+        return '';
+    }
+
+    function setEmpty() {
+        previewBox.className = 'img-preview-box img-preview-empty ' + sizeClass();
+        previewBox.innerHTML =
+            '<div class="img-preview-placeholder">' +
+              '<span class="img-preview-icon">🖼️</span>' +
+              '<p>左侧填好描述,点 <strong>生成宣传图</strong></p>' +
+              '<p style="font-size:.85em;color:var(--text-tertiary);margin-top:6px">出图后可下载 / 复制 / 重新生成</p>' +
+            '</div>';
+        if (actions) actions.style.display = 'none';
+    }
+
+    function setLoading() {
+        previewBox.className = 'img-preview-box is-loading ' + sizeClass();
+        previewBox.innerHTML =
+            '<div class="img-loading-state">' +
+              '<div class="img-loading-spinner"></div>' +
+              '<div class="img-loading-text">AI 正在作图…</div>' +
+              '<div class="img-loading-sub">通常 30~60 秒,请勿关闭弹窗</div>' +
+            '</div>';
+        if (actions) actions.style.display = 'none';
+    }
+
+    function setError(msg) {
+        previewBox.className = 'img-preview-box is-error ' + sizeClass();
+        const safeMsg = String(msg || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+        previewBox.innerHTML =
+            '<div class="img-error-state">' +
+              '<strong>⚠️ 生成失败</strong>' +
+              '<span>' + safeMsg + '</span>' +
+            '</div>';
+        if (actions) actions.style.display = 'none';
+    }
+
+    function setImage(url) {
+        currentImageUrl = url;
+        previewBox.className = 'img-preview-box ' + sizeClass();
+        previewBox.innerHTML = '<img src="' + url + '" alt="生成的民宿宣传图" />';
+        if (actions) actions.style.display = 'flex';
+    }
+
+    // 打开 / 关闭
+    openBtn.addEventListener('click', () => {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    });
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'block') closeModal();
+    });
+
+    // 风格切换
+    if (styleGroup) {
+        styleGroup.addEventListener('click', (e) => {
+            const btn = e.target.closest('.img-style-btn');
+            if (!btn) return;
+            styleGroup.querySelectorAll('.img-style-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentStyle = btn.dataset.style || 'photo';
+        });
+    }
+
+    // 尺寸切换 + 同步预览框形状
+    if (sizeGroup) {
+        sizeGroup.addEventListener('click', (e) => {
+            const btn = e.target.closest('.img-size-btn');
+            if (!btn) return;
+            sizeGroup.querySelectorAll('.img-size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentSize = btn.dataset.size || '1024x1024';
+            // 如果当前没有图,刷新空状态形状
+            if (!currentImageUrl) {
+                if (previewBox.classList.contains('is-loading') || previewBox.classList.contains('is-error')) {
+                    // 状态保持,只换形状
+                    previewBox.classList.remove('size-9-16', 'size-16-9');
+                    if (currentSize === '1024x1792') previewBox.classList.add('size-9-16');
+                    if (currentSize === '1792x1024') previewBox.classList.add('size-16-9');
+                } else {
+                    setEmpty();
+                }
+            }
+        });
+    }
+
+    // 自动从表单填 prompt
+    if (fillBtn) {
+        fillBtn.addEventListener('click', () => {
+            promptEl.value = buildImagePromptFromForm();
+            flashToast('✨ 已根据表单自动生成画面描述');
+        });
+    }
+
+    // 生成动作
+    async function doGenerate() {
+        const userPrompt = promptEl.value.trim();
+        if (!userPrompt) {
+            flashToast('⚠️ 请先填写画面描述');
+            promptEl.focus();
+            return;
+        }
+        const finalPrompt = userPrompt + (IMG_STYLE_SUFFIX[currentStyle] || '');
+        generateBtn.disabled = true;
+        const oldText = generateBtn.textContent;
+        generateBtn.textContent = '⏳ 生成中…';
+        setLoading();
+        try {
+            const url = await generateMinsuImage(finalPrompt, { size: currentSize });
+            setImage(url);
+            flashToast('🎨 宣传图已生成');
+        } catch (e) {
+            console.error('[imageGen] 失败:', e);
+            setError(e.message || '未知错误');
+            flashToast('❌ ' + (e.message || '生成失败'));
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.textContent = oldText;
+        }
+    }
+
+    if (generateBtn) generateBtn.addEventListener('click', doGenerate);
+    if (regenBtn)    regenBtn.addEventListener('click', doGenerate);
+
+    // 下载图片(跨域 fetch → blob)
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', async () => {
+            if (!currentImageUrl) return;
+            const oldText = downloadBtn.textContent;
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = '⏳ 准备下载…';
+            try {
+                const r = await fetch(currentImageUrl, { mode: 'cors' });
+                const blob = await r.blob();
+                const objUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = objUrl;
+                a.download = 'minsu-' + Date.now() + '.png';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { URL.revokeObjectURL(objUrl); a.remove(); }, 300);
+                flashToast('📥 已保存到下载目录');
+            } catch (e) {
+                // CORS 拒绝则降级为新窗口打开,用户右键保存
+                window.open(currentImageUrl, '_blank');
+                flashToast('💡 浏览器拒绝跨域下载,已打开图片新窗口,请右键保存');
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = oldText;
+            }
+        });
+    }
+
+    // 复制图片 URL
+    if (copyUrlBtn) {
+        copyUrlBtn.addEventListener('click', async () => {
+            if (!currentImageUrl) return;
+            try {
+                await navigator.clipboard.writeText(currentImageUrl);
+                flashToast('🔗 已复制图片链接');
+            } catch (_) {
+                const ta = document.createElement('textarea');
+                ta.value = currentImageUrl;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); flashToast('🔗 已复制图片链接'); }
+                catch (_) { flashToast('⚠️ 复制失败,请手动选中链接'); }
+                ta.remove();
+            }
+        });
+    }
+}
+
 // 页面加载：恢复草稿、刷新记录数
 window.addEventListener('load', () => {
     console.log('民宿 AI 平台提交助手已加载');
@@ -3975,4 +4262,5 @@ window.addEventListener('load', () => {
     updateRecordsBadge();
     refreshAiStatusText();
     initDescPolish();
+    initImageGen();
 });
