@@ -1,5 +1,15 @@
 // AI 平台真实提交渠道配置（无任何"自动推送"接口可用，全部为官方反馈/合作入口）
 const AI_PLATFORMS = {
+    deepseek: {
+        name: 'DeepSeek',
+        emoji: '🐳',
+        color: '#1C3BF2',
+        officialUrl: 'https://chat.deepseek.com/',
+        entryPath: '打开网页端或 APP → 点击左下角"问题反馈" → 提交民宿内容抓取诉求',
+        contact: 'support@deepseek.com',
+        successRate: 4,
+        eta: '1–2 周'
+    },
     doubao: {
         name: '豆包',
         emoji: '🤖',
@@ -30,16 +40,6 @@ const AI_PLATFORMS = {
         successRate: 3,
         eta: '2–4 周'
     },
-    kimi: {
-        name: 'Kimi',
-        emoji: '🌙',
-        color: '#95E1D3',
-        officialUrl: 'https://kimi.moonshot.cn/',
-        entryPath: 'APP 内反馈，或邮件至 feedback@moonshot.cn',
-        contact: 'feedback@moonshot.cn',
-        successRate: 4,
-        eta: '1–2 周'
-    },
     wenxin: {
         name: '文心一言（百度）',
         emoji: '🎨',
@@ -49,6 +49,26 @@ const AI_PLATFORMS = {
         contact: '百度商家中心 b.baidu.com',
         successRate: 5,
         eta: '即时–1 周'
+    },
+    nami: {
+        name: '纳米搜索',
+        emoji: '⚡',
+        color: '#E01A22',
+        officialUrl: 'https://n.cn/',
+        entryPath: '打开网页/APP → 侧边栏/设置内选择"意见反馈"提交内容抓取诉求',
+        contact: 'n.cn 意见收集',
+        successRate: 4,
+        eta: '1–2 周'
+    },
+    kimi: {
+        name: 'Kimi',
+        emoji: '🌙',
+        color: '#95E1D3',
+        officialUrl: 'https://kimi.moonshot.cn/',
+        entryPath: 'APP 内反馈，或邮件至 feedback@moonshot.cn',
+        contact: 'feedback@moonshot.cn',
+        successRate: 4,
+        eta: '1–2 周'
     },
     chatglm: {
         name: '智谱清言',
@@ -1284,8 +1304,6 @@ document.addEventListener('keydown', (e) => {
 function getFormData() {
     const platforms = Array.from(document.querySelectorAll('input[name="platform"]:checked'))
         .map(cb => cb.value);
-    const socials = Array.from(document.querySelectorAll('input[name="social"]:checked'))
-        .map(cb => cb.value);
 
     return {
         hostelName1: document.getElementById('hostelName1').value.trim(),
@@ -1297,8 +1315,7 @@ function getFormData() {
         videoLinks: document.getElementById('videoLinks').value.trim(),
         imageLinks: document.getElementById('imageLinks').value.trim(),
         noteLinks: document.getElementById('noteLinks').value.trim(),
-        platforms: platforms,
-        socials: socials
+        platforms: platforms
     };
 }
 
@@ -1308,7 +1325,7 @@ function validateForm(formData) {
            formData.location && 
            formData.description && 
            formData.contact &&
-           (formData.platforms.length > 0 || formData.socials.length > 0);
+           (formData.platforms.length > 0);
 }
 
 // =============================================================
@@ -3587,19 +3604,6 @@ function initXhsRewriter() {
 initXhsRewriter();
 renderXhsFormulas();
 
-// =============================================================
-// Tabs 切换
-// =============================================================
-document.querySelectorAll('.tab-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-        const tab = btn.dataset.tab;
-        document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b === btn));
-        document.querySelectorAll('.tab-pane').forEach((p) =>
-            p.classList.toggle('active', p.dataset.pane === tab)
-        );
-    });
-});
-
 // 工具：HTML 转义，避免用户输入注入卡片
 function escapeHtml(str) {
     if (str == null) return '';
@@ -3763,6 +3767,10 @@ function createPlatformCard(platformId, formData) {
             targetUrl = `https://www.doubao.com/?q=${encodedText}`;
         } else if (platformId === 'yuanbao') {
             targetUrl = `https://yuanbao.tencent.com/chat?q=${encodedText}`;
+        } else if (platformId === 'deepseek') {
+            targetUrl = `https://chat.deepseek.com/?q=${encodedText}`;
+        } else if (platformId === 'nami') {
+            targetUrl = `https://n.cn/?q=${encodedText}`;
         }
 
         // 调用一键复制 + 打开窗口
@@ -3918,15 +3926,6 @@ form.addEventListener('submit', (e) => {
     resultSection.style.display = 'block';
     platformCards.innerHTML = '';
     summaryContent.innerHTML = '';
-    if (socialCards) socialCards.innerHTML = '';
-
-    // 默认切回 AI 平台 tab
-    document.querySelectorAll('.tab-btn').forEach((b) =>
-        b.classList.toggle('active', b.dataset.tab === 'platforms')
-    );
-    document.querySelectorAll('.tab-pane').forEach((p) =>
-        p.classList.toggle('active', p.dataset.pane === 'platforms')
-    );
 
     resultSection.scrollIntoView({ behavior: 'smooth' });
 
@@ -3935,22 +3934,6 @@ form.addEventListener('submit', (e) => {
         const card = createPlatformCard(platformId, formData);
         if (card) platformCards.appendChild(card);
     });
-
-    // 渲染社交平台爆文卡片（只渲染勾选的）
-    if (socialCards) {
-        const selectedSocials = formData.socials || [];
-        SOCIAL_TEMPLATES
-            .filter((tpl) => selectedSocials.includes(tpl.id))
-            .forEach((tpl) => {
-                socialCards.appendChild(createSocialCard(tpl, formData));
-            });
-        if (selectedSocials.length === 0) {
-            const empty = document.createElement('div');
-            empty.className = 'social-empty';
-            empty.textContent = '你本次没有勾选任何社交 / 本地生活平台。如需要发布小红书 / 抖音等文案，请返回表单勾选后重新生成。';
-            socialCards.appendChild(empty);
-        }
-    }
 
     // 通用文案 + 通用复制按钮 + 重置按钮
     const universalText = generateSubmissionText(formData);

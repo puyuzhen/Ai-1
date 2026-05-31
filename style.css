@@ -446,6 +446,117 @@ main {
     gap: 15px;
 }
 
+/* ==========================================================================
+   精美智能大模型平台卡片选择器 (v15 升级)
+   ========================================================================== */
+.platform-card-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.platform-select-card {
+    display: block;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+.platform-select-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.platform-select-card .card-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-elevated);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+/* 悬浮微调 */
+.platform-select-card:hover .card-inner {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.04);
+}
+
+/* 选中高亮状态 */
+.platform-select-card input[type="checkbox"]:checked + .card-inner {
+    border-color: #615CED; /* 紫色主题 */
+    background: rgba(97, 92, 237, 0.05); /* 轻微透紫色晕染 */
+    box-shadow: 0 4px 15px rgba(97, 92, 237, 0.12);
+}
+
+/* 选中时的微动效 */
+.platform-select-card input[type="checkbox"]:checked:hover + .card-inner {
+    transform: translateY(-3px);
+}
+
+/* Logo 样式 */
+.platform-select-card .card-logo {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.platform-select-card:hover .card-logo {
+    transform: scale(1.06);
+}
+
+.platform-select-card .card-logo svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* 文本容器 */
+.platform-select-card .card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.25;
+}
+
+.platform-select-card .card-title {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+}
+
+.platform-select-card input[type="checkbox"]:checked + .card-inner .card-title {
+    color: var(--text);
+}
+
+.platform-select-card .card-subtitle {
+    font-size: 0.76em;
+    color: var(--text-tertiary);
+}
+
+.platform-select-card .card-subtitle strong {
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 1.1em;
+}
+
+.platform-select-card input[type="checkbox"]:checked + .card-inner .card-subtitle strong {
+    color: #615CED;
+}
+
 .platform-group-title {
     margin: 28px 0 12px;
     font-size: .78em;
@@ -733,8 +844,10 @@ footer {
         flex-direction: column;
     }
 
-    .platform-grid {
-        grid-template-columns: 1fr;
+    .platform-grid,
+    .platform-card-selector-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 10px;
     }
 
     .modal-content {

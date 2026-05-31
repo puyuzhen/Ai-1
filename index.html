@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-title" content="民宿推广">
     <meta name="format-detection" content="telephone=no">
     <title>民宿 AI 平台提交助手</title>
-    <link rel="stylesheet" href="style.css?v=15">
+    <link rel="stylesheet" href="style.css?v=16">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0a0a0a">
     <!-- 添加到主屏幕的图标 -->
@@ -265,55 +265,111 @@
                         </div>
                     </div>
 
-                    <h3 class="platform-group-title">🤖 AI 平台</h3>
-                    <div class="platform-grid">
-                        <label class="platform-checkbox">
+                    <h3 class="platform-group-title">🤖 智能大模型平台（选择您想抓取/提交的平台）</h3>
+                    <div class="platform-card-selector-grid">
+                        <!-- DeepSeek -->
+                        <label class="platform-select-card">
+                            <input type="checkbox" name="platform" value="deepseek" checked>
+                            <div class="card-inner">
+                                <div class="card-logo">
+                                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" fill="#1C3BF2"/><path d="M7 13.5s2.5-3 5-3 5 3 5 3a4.5 4.5 0 1 1-10 0z" fill="#FFF"/><circle cx="12" cy="11.5" r="1.5" fill="#1C3BF2"/></svg>
+                                </div>
+                                <div class="card-info">
+                                    <span class="card-title">deepseek</span>
+                                    <span class="card-subtitle"><strong>1658</strong> 收录</span>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- 豆包 -->
+                        <label class="platform-select-card">
                             <input type="checkbox" name="platform" value="doubao" checked>
-                            <span>🤖 豆包</span>
+                            <div class="card-inner">
+                                <div class="card-logo">
+                                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" fill="#FF6B6B"/><path d="M12 5c-3.314 0-6 2.686-6 6v2c0 3.314 2.686 6 6 6s6-2.686 6-6v-2c0-3.314-2.686-6-6-6z" fill="#FFF"/><circle cx="9.5" cy="11.5" r="1" fill="#FF6B6B"/><circle cx="14.5" cy="11.5" r="1" fill="#FF6B6B"/><path d="M11 14s.5 1 1 1 .5-1 .5-1" stroke="#FF6B6B" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                </div>
+                                <div class="card-info">
+                                    <span class="card-title">豆包</span>
+                                    <span class="card-subtitle"><strong>1538</strong> 收录</span>
+                                </div>
+                            </div>
                         </label>
-                        <label class="platform-checkbox">
-                            <input type="checkbox" name="platform" value="qianwen" checked>
-                            <span>💬 千问</span>
-                        </label>
-                        <label class="platform-checkbox">
+                        <!-- 腾讯元宝 -->
+                        <label class="platform-select-card">
                             <input type="checkbox" name="platform" value="yuanbao" checked>
-                            <span>💎 元宝</span>
+                            <div class="card-inner">
+                                <div class="card-logo">
+                                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" fill="#00C964"/><path d="M8.5 8.5C10 6 14 6 15.5 8.5c1.5 2.5 1.5 4.5 0 7-1.5 2.5-5.5 2.5-7 0-1.5-2.5-1.5-4.5 0-7z" fill="#FFF"/><path d="M10.5 10c.5-1 2.5-1 3 0s-.5 3-1.5 3-2-2-1.5-3z" fill="#00C964"/></svg>
+                                </div>
+                                <div class="card-info">
+                                    <span class="card-title">腾讯元宝</span>
+                                    <span class="card-subtitle"><strong>1380</strong> 收录</span>
+                                </div>
+                            </div>
                         </label>
-                        <label class="platform-checkbox">
-                            <input type="checkbox" name="platform" value="kimi" checked>
-                            <span>🌙 Kimi</span>
+                        <!-- 通义千问 -->
+                        <label class="platform-select-card">
+                            <input type="checkbox" name="platform" value="qianwen" checked>
+                            <div class="card-inner">
+                                <div class="card-logo">
+                                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" fill="#615CED"/><path d="M12 6l1.5 4.5h4.5l-3.5 3 1.5 4.5-4-3-4 3 1.5-4.5-3.5-3h4.5L12 6z" fill="#FFF"/></svg>
+                                </div>
+                                <div class="card-info">
+                                    <span class="card-title">通义千问</span>
+                                    <span class="card-subtitle"><strong>96</strong> 收录</span>
+                                </div>
+                            </div>
                         </label>
-                        <label class="platform-checkbox">
+                        <!-- 文心一言 -->
+                        <label class="platform-select-card">
                             <input type="checkbox" name="platform" value="wenxin" checked>
-                            <span>🎨 文心一言</span>
+                            <div class="card-inner">
+                                <div class="card-logo">
+                                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" fill="#00A3FF"/><path d="M12 6.5l4.5 2.5v5l-4.5 2.5-4.5-2.5v-5l4.5-2.5z" stroke="#FFF" stroke-width="2" stroke-linejoin="round"/><path d="M12 6.5v5.5m0 0L7.5 9.5m4.5 2.5l4.5-2.5m-4.5 2.5v5.5" stroke="#FFF" stroke-width="1.5"/></svg>
+                                </div>
+                                <div class="card-info">
+                                    <span class="card-title">文心一言</span>
+                                    <span class="card-subtitle"><strong>46</strong> 收录</span>
+                                </div>
+                            </div>
                         </label>
-                        <label class="platform-checkbox">
+                        <!-- 纳米搜索 -->
+                        <label class="platform-select-card">
+                            <input type="checkbox" name="platform" value="nami" checked>
+                            <div class="card-inner">
+                                <div class="card-logo">
+                                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" fill="#E01A22"/><circle cx="12" cy="7" r="1.8" fill="#FFF"/><circle cx="8" cy="13" r="1.8" fill="#FFF"/><circle cx="16" cy="13" r="1.8" fill="#FFF"/><circle cx="12" cy="17" r="1.8" fill="#FFF"/><path d="M12 8.8v6.4M9.5 12h5m-2.5.5l2.8 2.8m-5.6 0l2.8-2.8" stroke="#FFF" stroke-width="1.5"/></svg>
+                                </div>
+                                <div class="card-info">
+                                    <span class="card-title">纳米搜索</span>
+                                    <span class="card-subtitle"><strong>122</strong> 收录</span>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- KIMI -->
+                        <label class="platform-select-card">
+                            <input type="checkbox" name="platform" value="kimi" checked>
+                            <div class="card-inner">
+                                <div class="card-logo">
+                                    <svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#111"/><path d="M8 6h3v4.5l3.5-4.5h3.5L13.5 11l5 7h-3.5L11 13.5V18H8V6z" fill="#FFF"/><circle cx="16" cy="11" r="1" fill="#00A3FF"/></svg>
+                                </div>
+                                <div class="card-info">
+                                    <span class="card-title">Kimi</span>
+                                    <span class="card-subtitle"><strong>64</strong> 收录</span>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- 智谱清言 -->
+                        <label class="platform-select-card">
                             <input type="checkbox" name="platform" value="chatglm" checked>
-                            <span>🧠 智谱清言</span>
-                        </label>
-                    </div>
-
-                    <h3 class="platform-group-title">📱 社交 / 本地生活平台</h3>
-                    <div class="platform-grid">
-                        <label class="platform-checkbox">
-                            <input type="checkbox" name="social" value="xhs" checked>
-                            <span>📕 小红书</span>
-                        </label>
-                        <label class="platform-checkbox">
-                            <input type="checkbox" name="social" value="dy" checked>
-                            <span>🎵 抖音</span>
-                        </label>
-                        <label class="platform-checkbox">
-                            <input type="checkbox" name="social" value="wx" checked>
-                            <span>📰 公众号</span>
-                        </label>
-                        <label class="platform-checkbox">
-                            <input type="checkbox" name="social" value="dzdp" checked>
-                            <span>🗺️ 大众点评</span>
-                        </label>
-                        <label class="platform-checkbox">
-                            <input type="checkbox" name="social" value="ctrip" checked>
-                            <span>✈️ 携程</span>
+                            <div class="card-inner">
+                                <div class="card-logo">
+                                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" fill="#0033CC"/><path d="M7 12c0-2.761 2.239-5 5-5s5 2.239 5 5-2.239 5-5 5" stroke="#FFF" stroke-width="2" stroke-dasharray="3 3"/><path d="M9.5 9.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5z" fill="#FFF"/></svg>
+                                </div>
+                                <div class="card-info">
+                                    <span class="card-title">智谱清言</span>
+                                    <span class="card-subtitle"><strong>60</strong> 收录</span>
+                                </div>
+                            </div>
                         </label>
                     </div>
                 </section>
@@ -337,168 +393,13 @@
 
             <!-- 结果显示区域 -->
             <div id="resultSection" class="result-section" style="display: none;">
-                <div class="tabs">
-                    <button type="button" class="tab-btn active" data-tab="platforms">🎯 AI 平台清单</button>
-                    <button type="button" class="tab-btn" data-tab="social">📱 社交平台爆文</button>
-                </div>
-
-                <!-- Tab 1: AI 平台清单 -->
-                <div class="tab-pane active" data-pane="platforms">
-                    <p class="result-intro">
-                        每张卡片对应一个 AI 平台：复制文案 → 扫二维码（电脑端）或点链接打开官网 → 在 APP 反馈入口粘贴提交。
-                        提交后点击"标记为已提交"会写入下方记录台账。
-                    </p>
-                    <div id="platformCards" class="platform-cards"></div>
-                    <div id="summaryContent" class="summary-content"></div>
-                </div>
-
-                <!-- Tab 2: 社交平台爆文 -->
-                <div class="tab-pane" data-pane="social">
-                    <p class="result-intro">
-                        <strong>真正的"间接植入"在这里。</strong>
-                        豆包训练数据大量来自头条系（抖音）、文心来自百度系、千问来自阿里系；
-                        而<strong>大众点评 / 携程</strong>作为本地生活与 OTA 数据池，是 AI 回答"XX 哪里住"类问题的高频引用源。
-                        持续在这些平台发布 / 完善内容，比向 AI 反馈入口提交有效 10 倍。
-                        每张卡片会按该平台规则<strong>自动审查违禁词</strong>，复制到的就是安全文案。
-                    </p>
-
-                    <!-- 小红书爆文智能改写器 -->
-                    <details class="xhs-rewriter" id="xhsRewriter" open>
-                        <summary>
-                            <span class="rewriter-title-emoji">📕</span>
-                            <span class="rewriter-title-main">小红书爆文「智能改写器」</span>
-                            <span class="rewriter-title-sub">把别人的爆款笔记 → 改写成你自己的笔记，多次刷新出多版</span>
-                        </summary>
-
-                        <div class="rewriter-body">
-                            <!-- 模式切换 -->
-                            <div class="rewrite-mode-switch">
-                                <button type="button" id="rewriteModeLocal" class="mode-btn">
-                                    🌿 <strong>本地词库</strong>
-                                    <span class="mode-tag">免费 · 离线</span>
-                                </button>
-                                <button type="button" id="rewriteModeAi" class="mode-btn">
-                                    🤖 <strong>AI 改写</strong>
-                                    <span class="mode-tag">联网 · 需 API key</span>
-                                </button>
-                            </div>
-
-                            <!-- AI 模式专用：API key 状态条 -->
-                            <div id="xhsAiKeyBar" class="ai-key-bar" style="display:none">
-                                <span class="ai-key-icon">🔐</span>
-                                <span id="xhsAiKeySummary" class="ai-key-summary">⚠️ 还没配置 API key</span>
-                            </div>
-
-                            <p class="rewriter-warn">
-                                � <strong>两种模式怎么选</strong>：<br>
-                                · 🌿 <strong>本地词库</strong>：完全免费、不联网、规则化伪原创，质量中等。<br>
-                                · 🤖 <strong>AI 改写</strong>：调真大模型（智谱免费 / DeepSeek / Kimi），质量高，<u>支持粘贴链接自动抓取</u>（通过 Jina Reader）。<br>
-                                key 只存你自己浏览器，<u>不会上传任何服务器</u>。
-                            </p>
-
-                            <div class="rewriter-form">
-                                <label class="rewriter-label" for="xhsSourceUrl">
-                                    🔗 笔记链接 <span class="req-hint">（AI 模式下会自动抓取）</span>
-                                </label>
-                                <input
-                                    type="url"
-                                    id="xhsSourceUrl"
-                                    class="rewriter-input"
-                                    placeholder="https://www.xiaohongshu.com/explore/xxx 或 https://xhslink.com/xxx"
-                                />
-
-                                <label class="rewriter-label" for="xhsSourceText">
-                                    📋 粘贴原笔记正文 <span class="req-hint">（AI 模式可留空，本地模式必填）</span>
-                                </label>
-                                <textarea
-                                    id="xhsSourceText"
-                                    class="rewriter-textarea"
-                                    rows="6"
-                                    placeholder="把对方笔记正文整段复制进来，越完整改写越准。&#10;Tip：标题单独放第一行，效果最佳。&#10;AI 模式下：填了 URL 会自动抓取，这里可以留空。"
-                                ></textarea>
-
-                                <div class="rewriter-actions">
-                                    <button type="button" id="xhsRewriteBtn" class="btn-primary">
-                                        ✨ 一键改写
-                                    </button>
-                                    <button type="button" id="xhsRewriteRefreshBtn" class="btn-secondary" disabled>
-                                        🔄 再洗一版
-                                    </button>
-                                    <button type="button" id="xhsRewriteClearBtn" class="btn-link">
-                                        🗑 清空
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- 状态/loading 行 -->
-                            <div id="xhsRewriterStatus" class="rewriter-status" style="display:none"></div>
-
-                            <!-- 输出区 -->
-                            <div id="xhsRewriteOutput" class="rewriter-output" style="display:none">
-                                <!-- JS 动态填充：3 个候选标题 + 改写正文 + 推荐 hashtag -->
-                            </div>
-                        </div>
-                    </details>
-
-                    <!-- AI 设置模态框 -->
-                    <div id="xhsAiSetupModal" class="ai-setup-modal" style="display:none">
-                        <div class="ai-setup-card">
-                            <button type="button" id="aiSetupClose" class="ai-setup-close" aria-label="关闭">×</button>
-                            <h3>🤖 配置 AI</h3>
-                            <p class="ai-setup-intro">
-                                默认使用<strong>内建 AI（免配置）</strong>，直接可用。如需更稳定或私有 key，可切换到下方自费选项。
-                            </p>
-
-                            <label class="ai-setup-label" for="aiSetupProvider">1. 选 AI 提供商</label>
-                            <select id="aiSetupProvider" class="ai-setup-select">
-                                <option value="builtin">🎁 内建 AI · 免配置（推荐）</option>
-                                <option value="glm">智谱 GLM-4-Flash · 🟢 完全免费</option>
-                                <option value="deepseek">DeepSeek · 💸 ¥1/百万 token</option>
-                                <option value="moonshot">Moonshot Kimi · 💸 ¥12/百万 token</option>
-                            </select>
-                            <p id="aiSetupDesc" class="ai-setup-desc"></p>
-                            <p class="ai-setup-link" id="aiSetupLinkRow">
-                                👉 <a id="aiSetupSignup" href="#" target="_blank" rel="noopener noreferrer">去申请 API key</a>
-                                （注册后到「API Keys」页面创建一条，复制完整字符串）
-                            </p>
-
-                            <div id="aiSetupKeyRow">
-                                <label class="ai-setup-label" for="aiSetupKey">2. 粘贴你的 API key</label>
-                                <input
-                                    id="aiSetupKey"
-                                    type="password"
-                                    class="ai-setup-input"
-                                    autocomplete="off"
-                                    spellcheck="false"
-                                />
-                                <p class="ai-setup-tip">🔒 仅保存到本机浏览器 localStorage（你随时可以清除）。</p>
-                            </div>
-
-                            <div id="aiSetupStatus" class="ai-setup-status"></div>
-
-                            <div class="ai-setup-actions">
-                                <button type="button" id="aiSetupTest" class="btn-secondary">🔌 测试连接</button>
-                                <button type="button" id="aiSetupSave" class="btn-primary">💾 保存</button>
-                                <button type="button" id="aiSetupCancel" class="btn-link">取消</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 小红书爆款公式速查 -->
-                    <details class="xhs-formulas" id="xhsFormulas">
-                        <summary>
-                            <span class="rewriter-title-emoji">🔥</span>
-                            <span class="rewriter-title-main">小红书爆款标题 & 笔记 8 大公式速查</span>
-                            <span class="rewriter-title-sub">写完先对一对，命中越多越容易上推荐</span>
-                        </summary>
-                        <div id="xhsFormulasBody" class="formulas-body">
-                            <!-- JS 动态填充 -->
-                        </div>
-                    </details>
-
-                    <h3 class="social-section-title">🎯 基于你表单内容的多平台爆文</h3>
-                    <div id="socialCards" class="social-cards"></div>
-                </div>
+                <p class="result-intro">
+                    每张卡片对应一个 AI 平台：复制文案 → 自动复制剪贴板并跳转（或手机扫码）打开官网 → 在 APP 反馈入口直接粘贴提交。
+                    提交后点击"标记为已提交"会写入下方记录台账。
+                </p>
+                <div id="platformCards" class="platform-cards"></div>
+                <div id="summaryContent" class="summary-content"></div>
+            </div>
             </div>
         </main>
 
@@ -640,6 +541,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=15"></script>
+    <script src="script.js?v=16"></script>
 </body>
 </html>
