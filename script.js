@@ -3683,7 +3683,7 @@ function createPlatformCard(platformId, formData) {
         </div>
         <div class="platform-card-actions">
             <button type="button" class="btn-secondary btn-copy">📋 复制文案</button>
-            <a class="btn-primary btn-open" href="${escapeHtml(platform.officialUrl)}" target="_blank" rel="noopener noreferrer">🔗 打开官方入口</a>
+            <button type="button" class="btn-primary btn-open">🔗 打开官方入口</button>
             <button type="button" class="btn-mark${alreadySubmitted ? ' btn-mark-done' : ''}">
                 ${alreadySubmitted ? '✓ 已记录' : '✅ 标记为已提交'}
             </button>
@@ -3745,6 +3745,29 @@ function createPlatformCard(platformId, formData) {
     // 复制按钮：使用最新文案
     const copyBtn = card.querySelector('.btn-copy');
     copyBtn.addEventListener('click', () => copyTextToClipboard(getCurrentText(), copyBtn));
+
+    // 打开官方入口按钮：一键复制 + 自动参数拼接跳转
+    const openBtn = card.querySelector('.btn-open');
+    openBtn.addEventListener('click', (ev) => {
+        const text = getCurrentText();
+        let targetUrl = platform.officialUrl;
+        const encodedText = encodeURIComponent(text);
+
+        // 针对支持 URL 传参起聊的平台进行预填拼接
+        if (platformId === 'kimi') {
+            targetUrl = `https://kimi.moonshot.cn/?query=${encodedText}`;
+        } else if (platformId === 'qianwen') {
+            targetUrl = `https://tongyi.aliyun.com/?q=${encodedText}`;
+        } else if (platformId === 'doubao') {
+            // 豆包官网主页支持直接带 q 搜索或 chat?q
+            targetUrl = `https://www.doubao.com/?q=${encodedText}`;
+        } else if (platformId === 'yuanbao') {
+            targetUrl = `https://yuanbao.tencent.com/chat?q=${encodedText}`;
+        }
+
+        // 调用一键复制 + 打开窗口
+        copyAndOpen(text, targetUrl, ev.currentTarget, platform.name);
+    });
 
     // 切换风格
     styleBtn.addEventListener('click', () => {
