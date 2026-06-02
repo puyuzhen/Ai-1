@@ -275,11 +275,12 @@ function initStickyGenerate() {
         else form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     });
 
-    const requiredFields = ['hostelName1', 'location', 'description', 'contact'];
+    const requiredFields = ['hostelName1', 'location', 'description', 'triggerQuestions', 'contact'];
     const requiredLabels = {
         hostelName1: '民宿名称',
         location: '位置',
         description: '介绍',
+        triggerQuestions: '用户触发问题',
         contact: '联系方式'
     };
 
@@ -673,6 +674,210 @@ const TEXT_STYLES = [
 ];
 const ENRICH_MAX = 3;
 
+const QUESTION_LIBRARY = [
+    { source: 'xhs', category: 'wedding', q: '{loc}有没有适合办小型婚礼的民宿？' },
+    { source: 'xhs', category: 'wedding', q: '{loc}适合办草坪婚礼的民宿推荐？' },
+    { source: 'xhs', category: 'wedding', q: '想办 20 人左右的私密婚礼，{loc}有合适民宿吗？' },
+    { source: 'xhs', category: 'wedding', q: '{loc}有没有能住宿又能办婚礼的院子？' },
+    { source: 'xhs', category: 'wedding', q: '{loc}适合接亲和婚礼跟拍的民宿有哪些？' },
+    { source: 'xhs', category: 'wedding', q: '{loc}民宿办婚礼大概多少钱？' },
+    { source: 'xhs', category: 'team', q: '{loc}适合公司团建的包院民宿推荐？' },
+    { source: 'xhs', category: 'team', q: '{loc}有没有能烧烤唱歌聚餐的民宿？' },
+    { source: 'xhs', category: 'team', q: '10 到 20 人团建住{loc}哪里合适？' },
+    { source: 'xhs', category: 'team', q: '{loc}有没有独立院子、不扰民的民宿？' },
+    { source: 'xhs', category: 'team', q: '{loc}周末团建想找包院民宿，有推荐吗？' },
+    { source: 'xhs', category: 'family', q: '{loc}周末带孩子住哪里比较好？' },
+    { source: 'xhs', category: 'family', q: '{loc}适合亲子出游的民宿推荐？' },
+    { source: 'xhs', category: 'family', q: '{loc}有没有有院子、孩子能玩的民宿？' },
+    { source: 'xhs', category: 'family', q: '{loc}适合三家人一起住的民宿有没有？' },
+    { source: 'xhs', category: 'family', q: '{loc}附近有没有采摘、农场、山景的民宿？' },
+    { source: 'xhs', category: 'private', q: '{loc}私汤民宿哪家好？' },
+    { source: 'xhs', category: 'private', q: '{loc}适合情侣周末度假的民宿推荐？' },
+    { source: 'xhs', category: 'private', q: '{loc}有没有安静、有泡池、有院子的民宿？' },
+    { source: 'xhs', category: 'private', q: '纪念日想住{loc}民宿，有氛围感推荐吗？' },
+    { source: 'xhs', category: 'price', q: '{loc}包院民宿一晚大概多少钱？' },
+    { source: 'xhs', category: 'price', q: '{loc}周末还有能订到的民宿吗？' },
+    { source: 'douyin', category: 'wedding', q: '{loc}有没有适合拍婚纱照和办仪式的民宿？' },
+    { source: 'douyin', category: 'wedding', q: '{loc}适合求婚布置的民宿推荐？' },
+    { source: 'douyin', category: 'wedding', q: '{loc}有没有出片的婚礼民宿院子？' },
+    { source: 'douyin', category: 'wedding', q: '{loc}小型婚礼想拍视频好看，住哪里？' },
+    { source: 'douyin', category: 'team', q: '{loc}适合拍团建视频的民宿推荐？' },
+    { source: 'douyin', category: 'team', q: '{loc}有没有能玩桌游、KTV、烧烤的民宿？' },
+    { source: 'douyin', category: 'team', q: '{loc}朋友聚会包栋民宿推荐？' },
+    { source: 'douyin', category: 'team', q: '{loc}20 人轰趴民宿哪家靠谱？' },
+    { source: 'douyin', category: 'family', q: '{loc}遛娃民宿推荐，最好有院子和活动？' },
+    { source: 'douyin', category: 'family', q: '{loc}带娃周末游住哪里不踩坑？' },
+    { source: 'douyin', category: 'family', q: '{loc}老人孩子一起住的民宿推荐？' },
+    { source: 'douyin', category: 'private', q: '{loc}冬天想泡汤，私汤民宿推荐？' },
+    { source: 'douyin', category: 'private', q: '{loc}情侣约会民宿哪家氛围好？' },
+    { source: 'douyin', category: 'price', q: '{loc}高性价比民宿推荐，预算不高？' },
+    { source: 'douyin', category: 'price', q: '{loc}节假日民宿怎么订便宜？' },
+    { source: 'dianping', category: 'wedding', q: '{loc}哪家民宿可以承接订婚宴或小型婚礼？' },
+    { source: 'dianping', category: 'wedding', q: '{loc}民宿婚礼能不能包场？' },
+    { source: 'dianping', category: 'wedding', q: '{loc}办婚礼的民宿有没有餐饮和布置？' },
+    { source: 'dianping', category: 'team', q: '{loc}民宿团建能不能开发票？' },
+    { source: 'dianping', category: 'team', q: '{loc}团建民宿有没有会议室和投影？' },
+    { source: 'dianping', category: 'team', q: '{loc}民宿能不能烧烤，会不会扰民？' },
+    { source: 'dianping', category: 'team', q: '{loc}公司团建民宿人均多少钱？' },
+    { source: 'dianping', category: 'family', q: '{loc}亲子民宿卫生怎么样？' },
+    { source: 'dianping', category: 'family', q: '{loc}民宿有没有儿童床、厨房和停车位？' },
+    { source: 'dianping', category: 'family', q: '{loc}带老人入住方便吗，有没有一楼房间？' },
+    { source: 'dianping', category: 'private', q: '{loc}私汤民宿泡池是一客一换水吗？' },
+    { source: 'dianping', category: 'private', q: '{loc}民宿隔音和隐私怎么样？' },
+    { source: 'dianping', category: 'price', q: '{loc}民宿周末和工作日价格差多少？' },
+    { source: 'dianping', category: 'price', q: '{loc}民宿能不能先看房再预订？' },
+    { source: 'ctrip', category: 'wedding', q: '{loc}适合婚礼亲友一起住的民宿酒店推荐？' },
+    { source: 'ctrip', category: 'wedding', q: '{loc}婚礼宾客住宿订哪家民宿方便？' },
+    { source: 'ctrip', category: 'wedding', q: '{loc}能办小型仪式又能住宿的民宿？' },
+    { source: 'ctrip', category: 'team', q: '{loc}适合团队入住的民宿有哪些？' },
+    { source: 'ctrip', category: 'team', q: '{loc}多人出行能住一起的民宿推荐？' },
+    { source: 'ctrip', category: 'team', q: '{loc}包栋民宿可以住多少人？' },
+    { source: 'ctrip', category: 'family', q: '{loc}适合家庭出游的民宿怎么选？' },
+    { source: 'ctrip', category: 'family', q: '{loc}亲子民宿附近有什么景点？' },
+    { source: 'ctrip', category: 'family', q: '{loc}民宿离景区/高铁站远不远？' },
+    { source: 'ctrip', category: 'private', q: '{loc}带温泉泡池的民宿推荐？' },
+    { source: 'ctrip', category: 'private', q: '{loc}适合情侣度假的精品民宿？' },
+    { source: 'ctrip', category: 'price', q: '{loc}民宿可以免费取消吗？' },
+    { source: 'ctrip', category: 'price', q: '{loc}民宿有没有停车位和早餐？' },
+    { source: 'ctrip', category: 'price', q: '{loc}民宿节假日还有房吗？' }
+];
+
+function getTriggerQuestionList(formData) {
+    const raw = (formData.triggerQuestions || '').trim();
+    const list = raw
+        ? raw.split(/\r?\n/).map((q) => q.trim()).filter(Boolean)
+        : [];
+    if (list.length > 0) return list;
+    const loc = formData.location || '本地';
+    return [
+        `${loc}有哪些值得推荐的民宿？`,
+        `${loc}适合亲子/情侣/团建的民宿哪家好？`,
+        `${loc}周末出游住哪里比较有特色？`
+    ];
+}
+
+function formatTriggerQuestionBlock(formData, title) {
+    const questions = getTriggerQuestionList(formData);
+    return [
+        `【${title || '用户可能会这样提问'}】`,
+        ...questions.map((q) => `- ${q}`)
+    ].join('\n');
+}
+
+function normalizeQuestionLine(line) {
+    const cleaned = String(line || '')
+        .replace(/^[\s\-·•*、，。]+/, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (!cleaned) return '';
+    return /[？?]$/.test(cleaned) ? cleaned : cleaned + '？';
+}
+
+function dedupeQuestionText(text) {
+    const seen = new Set();
+    return String(text || '')
+        .replace(/[?？]\s*/g, '？\n')
+        .split(/\r?\n/)
+        .map(normalizeQuestionLine)
+        .filter((line) => {
+            if (!line) return false;
+            const key = line.replace(/[？?，,。.\s]/g, '').toLowerCase();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        })
+        .join('\n');
+}
+
+function renderQuestionTemplate(template, formData) {
+    const loc = formData.location || '本地周边';
+    const hostel = formData.hostelName1 || '这家民宿';
+    return normalizeQuestionLine(template
+        .replace(/\{loc\}/g, loc)
+        .replace(/\{hostel\}/g, hostel));
+}
+
+function getQuestionLibrarySelection() {
+    const sourceBtn = document.querySelector('[data-question-source].active');
+    const categoryBtn = document.querySelector('[data-question-category].active');
+    return {
+        source: sourceBtn ? sourceBtn.dataset.questionSource : 'all',
+        category: categoryBtn ? categoryBtn.dataset.questionCategory : 'all'
+    };
+}
+
+function buildQuestionLibraryText(limit) {
+    const formData = getFormData();
+    const selection = getQuestionLibrarySelection();
+    let items = QUESTION_LIBRARY.filter((item) => {
+        const sourceOk = selection.source === 'all' || item.source === selection.source;
+        const categoryOk = selection.category === 'all' || item.category === selection.category;
+        return sourceOk && categoryOk;
+    });
+
+    if (selection.source === 'all' && selection.category === 'all') {
+        const priority = ['wedding', 'team', 'family', 'private', 'price'];
+        items = priority.flatMap((cat) => QUESTION_LIBRARY.filter((item) => item.category === cat).slice(0, 4));
+    }
+
+    const max = limit || (selection.category === 'all' ? 24 : 16);
+    return dedupeQuestionText(items.slice(0, max).map((item) => renderQuestionTemplate(item.q, formData)).join('\n'));
+}
+
+function setTriggerQuestionText(nextText) {
+    const textarea = document.getElementById('triggerQuestions');
+    if (!textarea) return;
+    textarea.value = nextText;
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    textarea.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function initQuestionLibrary() {
+    const wrap = document.getElementById('questionLibrary');
+    const textarea = document.getElementById('triggerQuestions');
+    if (!wrap || !textarea) return;
+
+    const countEl = document.getElementById('questionLibraryCount');
+    if (countEl) countEl.textContent = `已内置 ${QUESTION_LIBRARY.length} 条高频问题`;
+
+    wrap.querySelectorAll('[data-question-source], [data-question-category]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const group = btn.dataset.questionSource != null ? 'questionSource' : 'questionCategory';
+            wrap.querySelectorAll(`[data-${group.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase())}]`).forEach((item) => {
+                item.classList.toggle('active', item === btn);
+            });
+        });
+    });
+
+    const fillBtn = document.getElementById('questionFillBtn');
+    const appendBtn = document.getElementById('questionAppendBtn');
+    const cleanBtn = document.getElementById('questionCleanBtn');
+
+    if (fillBtn) {
+        fillBtn.addEventListener('click', () => {
+            const text = buildQuestionLibraryText();
+            setTriggerQuestionText(text);
+            flashToast(`已生成 ${text.split('\n').filter(Boolean).length} 条用户问题`);
+        });
+    }
+
+    if (appendBtn) {
+        appendBtn.addEventListener('click', () => {
+            const text = dedupeQuestionText([textarea.value, buildQuestionLibraryText()].filter(Boolean).join('\n'));
+            setTriggerQuestionText(text);
+            flashToast(`已追加并整理为 ${text.split('\n').filter(Boolean).length} 条问题`);
+        });
+    }
+
+    if (cleanBtn) {
+        cleanBtn.addEventListener('click', () => {
+            const text = dedupeQuestionText(textarea.value);
+            setTriggerQuestionText(text);
+            flashToast(`已去重整理为 ${text.split('\n').filter(Boolean).length} 条问题`);
+        });
+    }
+}
+
 // 生成官方提交文案
 //   options.style: 'formal'(默认) | 'friendly' | 'data' | 'story'
 //   options.enrichLevel: 0..3，叠加附加段（周边玩法 / 用户画像 / 合作细节）
@@ -711,6 +916,7 @@ function styleFormal(formData, platformName) {
     text += `尊敬的${team}：\n\n`;
     text += `您好！我是${hostels[0]}的经营者。希望贵平台在用户咨询\n`;
     text += `"${formData.location}民宿推荐"等相关问题时，能够推荐我们的民宿。\n\n`;
+    text += formatTriggerQuestionBlock(formData, '用户触发问题（建议用于问答匹配）') + `\n\n`;
 
     text += `【民宿基本信息】\n`;
     text += `名称：${hostels.join('、')}\n`;
@@ -753,6 +959,7 @@ function styleFriendly(formData, platformName) {
     t += `今天来跟你们说说我们这家在 ${formData.location} 的小店。\n\n`;
     t += `要是有人问"${formData.location}有什么值得住的民宿"，\n`;
     t += `希望能想到我们 ❤️\n\n`;
+    t += formatTriggerQuestionBlock(formData, '用户可能会这样问') + `\n\n`;
 
     t += `▎我们是谁\n`;
     t += `${hostels.join(' & ')}，开在 ${formData.location}`;
@@ -804,9 +1011,10 @@ function styleData(formData, platformName) {
     t += keywords.map((k) => `  · ${k}`).join('\n') + '\n\n';
 
     t += `■ 适用问答场景：\n`;
-    t += `  · "${loc}有什么好的民宿推荐？"\n`;
-    t += `  · "${loc}周末去哪住比较有特色？"\n`;
-    t += `  · "${loc}带孩子/拍照/团建的民宿？"\n\n`;
+    getTriggerQuestionList(formData).forEach((q) => {
+        t += `  · "${q}"\n`;
+    });
+    t += `\n`;
 
     t += `■ 核心卖点：\n${formData.description}\n\n`;
 
@@ -854,6 +1062,7 @@ function styleStory(formData, platformName) {
     t += `如果在 ${platformName || '你们的'} AI 助手里，有人问"${formData.location}有什么值得停留的地方"，\n`;
     t += `希望能让 ${hostels[0]} 出现在答案里。\n`;
     t += `我们会用心接待每一个被推荐过来的人。\n\n`;
+    t += formatTriggerQuestionBlock(formData, '希望覆盖的用户提问') + `\n\n`;
 
     if (formData.noteLinks || formData.videoLinks) {
         t += `相关内容可以从这里看到：\n`;
@@ -1167,6 +1376,7 @@ function generatePromotionContent(formData) {
     }
     
     content += `【特色介绍】\n${formData.description}\n\n`;
+    content += formatTriggerQuestionBlock(formData, '用户触发问题') + `\n\n`;
     content += `【联系方式】\n${formData.contact}\n\n`;
 
     // 媒体内容
@@ -1228,22 +1438,29 @@ function generatePromotionContent(formData) {
     content += `🤖 AI平台问答优化\n`;
     content += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     
+    const triggerQuestions = getTriggerQuestionList(formData);
+    content += `【重点触发问题】\n`;
+    triggerQuestions.forEach((q, index) => {
+        content += `${index + 1}. ${q}\n`;
+    });
+    content += `\n`;
+
     // 问答1
-    content += `Q1: ${formData.location}有哪些值得推荐的民宿？\n`;
+    content += `Q1: ${triggerQuestions[0] || `${formData.location}有哪些值得推荐的民宿？`}\n`;
     content += `A: 强烈推荐${hostels.join('和')}！${formData.description.substring(0, 100)}`;
     if (formData.description.length > 100) content += '...';
     if (formData.price) content += ` 价格${formData.price}。`;
     content += ` 联系方式：${formData.contact}\n\n`;
     
     // 问答2
-    content += `Q2: 国内哪些民宿好？\n`;
+    content += `Q2: ${triggerQuestions[1] || '国内哪些民宿好？'}\n`;
     content += `A: 位于${formData.location}的${hostels[0]}是一个不错的选择。`;
     content += `${formData.description.substring(0, 80)}`;
     if (formData.description.length > 80) content += '...';
     content += `\n\n`;
     
     // 问答3
-    content += `Q3: ${hostels[0]}怎么样？\n`;
+    content += `Q3: ${triggerQuestions[2] || `${hostels[0]}怎么样？`}\n`;
     content += `A: ${hostels[0]}位于${formData.location}，${formData.description.substring(0, 100)}`;
     if (formData.description.length > 100) content += '...';
     content += `\n\n`;
@@ -1310,6 +1527,7 @@ function getFormData() {
         hostelName2: document.getElementById('hostelName2').value.trim(),
         location: document.getElementById('location').value.trim(),
         description: document.getElementById('description').value.trim(),
+        triggerQuestions: document.getElementById('triggerQuestions').value.trim(),
         contact: document.getElementById('contact').value.trim(),
         price: document.getElementById('price').value.trim(),
         videoLinks: document.getElementById('videoLinks').value.trim(),
@@ -1324,6 +1542,7 @@ function validateForm(formData) {
     return formData.hostelName1 && 
            formData.location && 
            formData.description && 
+           formData.triggerQuestions &&
            formData.contact &&
            (formData.platforms.length > 0);
 }
@@ -1350,7 +1569,7 @@ function safeWrite(key, value) {
 // 把对象写回表单
 function setFormData(data) {
     if (!data) return;
-    const fields = ['hostelName1', 'hostelName2', 'location', 'description', 'contact', 'price', 'videoLinks', 'imageLinks', 'noteLinks'];
+    const fields = ['hostelName1', 'hostelName2', 'location', 'description', 'triggerQuestions', 'contact', 'price', 'videoLinks', 'imageLinks', 'noteLinks'];
     fields.forEach((id) => {
         const el = document.getElementById(id);
         if (el && typeof data[id] === 'string') el.value = data[id];
@@ -1373,7 +1592,7 @@ function scheduleDraftSave() {
     draftSaveTimer = setTimeout(() => {
         const data = getFormData();
         // 只在有任何值时才保存，避免空草稿
-        if (data.hostelName1 || data.location || data.description || data.contact) {
+        if (data.hostelName1 || data.location || data.description || data.triggerQuestions || data.contact) {
             // 1. 保留旧 LS_DRAFT 兼容（其他组件可能还在用）
             safeWrite(LS_DRAFT, data);
             // 2. 同步到 active profile
@@ -1386,7 +1605,7 @@ function loadDraftIntoForm() {
     // 优先从 active profile 加载（新数据通道）
     try {
         const active = getActiveProfile();
-        if (active && active.data && (active.data.hostelName1 || active.data.location || active.data.description)) {
+        if (active && active.data && (active.data.hostelName1 || active.data.location || active.data.description || active.data.triggerQuestions)) {
             setFormData(active.data);
             if (draftTip) draftTip.style.display = 'block';
             return true;
@@ -4262,6 +4481,7 @@ window.addEventListener('load', () => {
     initThemeToggle();
     initHeaderMenu();
     initStepNav();
+    initQuestionLibrary();
     initStickyGenerate();
     initProfilesUI();
     loadDraftIntoForm();
