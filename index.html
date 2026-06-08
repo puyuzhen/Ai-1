@@ -55,7 +55,7 @@
                             <span class="header-menu-icon">🤖</span>
                             <span class="header-menu-text">
                                 <strong>AI 配置</strong>
-                                <small>当前: <span id="aiStatusText">内建免配置</span></small>
+                                <small>当前: <span id="aiStatusText">服务端代理</span></small>
                             </span>
                         </button>
                     </div>
@@ -156,13 +156,13 @@
                     <div class="form-group">
                         <div class="form-label-row">
                             <label for="description">民宿特色介绍 <span class="req">必填</span></label>
-                            <button type="button" id="descPolishBtn" class="btn-inline-ai" title="把口语化描述自动扩写成专业卖点（内建 AI 免配置）">
+                            <button type="button" id="descPolishBtn" class="btn-inline-ai" title="把口语化描述自动扩写成专业卖点（通过服务端安全代理调用 AI）">
                                 ✨ AI 润色
                             </button>
                         </div>
                         <textarea id="description" required rows="5" placeholder="例如：&#10;- 环境特点（山景/湖景/古镇等）&#10;- 房间设施（独立卫浴/智能家居等）&#10;- 特色服务（早餐/接送/活动等）&#10;&#10;不会写？直接写「有山有水有早餐」，点右上 ✨AI 润色 自动扩写。"></textarea>
                         <small class="form-tip">
-                            💡 写不好没关系，点 <strong>✨AI 润色</strong>(免配置可用)让 AI 帮你扩写成专业卖点。
+                            💡 写不好没关系，点 <strong>✨AI 润色</strong>，通过服务端安全代理让 AI 帮你扩写成专业卖点。
                         </small>
 
                         <div id="descPolishPanel" class="polish-panel" style="display:none">
@@ -451,7 +451,7 @@
             <h2>🎨 AI 民宿宣传图</h2>
             <p class="result-intro">
                 一键生成可用于<strong>小红书封面 / 抖音首图 / 朋友圈海报</strong>的民宿氛围图。
-                免费额度有限,生成失败会有提示。
+                需在服务端配置图像生成密钥；生成失败会有提示。
             </p>
 
             <div class="imggen-body">
@@ -543,6 +543,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=23"></script>
+    <script src="script.js?v=25"></script>
 </body>
 </html>

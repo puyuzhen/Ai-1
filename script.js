@@ -108,6 +108,44 @@ const LS_RECORDS = 'mssyt_records_v1';
 const LS_THEME = 'mssyt_theme_v1';
 const LS_PROFILES = 'mssyt_profiles_v1';
 
+const REAL_PLATFORM_ENTRY_OVERRIDES = {
+    deepseek: {
+        officialUrl: 'https://chat.deepseek.com/',
+        entryPath: '真实入口：DeepSeek 网页端。没有公开民宿/商家收录提交入口，打开后把文案粘贴到对话里测试是否已被识别；反馈可走站内反馈。',
+        contact: 'DeepSeek 站内反馈'
+    },
+    qianwen: {
+        officialUrl: 'https://www.tongyi.com/',
+        entryPath: '真实入口：通义官网/网页端。没有公开民宿内容收录接口，打开后复制文案到对话或站内反馈。',
+        contact: '通义站内反馈 / 阿里云客服'
+    },
+    yuanbao: {
+        officialUrl: 'https://yuanbao.tencent.cn/',
+        entryPath: '真实入口：腾讯元宝官网/网页端。没有公开商家收录接口，打开后把文案复制到对话或 APP 意见反馈。',
+        contact: '腾讯元宝站内反馈 / 腾讯客服'
+    },
+    wenxin: {
+        officialUrl: 'https://didian.baidu.com/',
+        entryPath: '真实入口：百度商家中心。民宿这类本地生活信息优先完善百度商家/地图资料，文心更可能引用百度生态信息。',
+        contact: '百度地图商户中心'
+    },
+    nami: {
+        officialUrl: 'https://bot.n.cn/',
+        entryPath: '真实入口：纳米 AI 搜索网页版。没有公开民宿收录接口，打开后粘贴文案测试/反馈。',
+        contact: '纳米 AI 搜索站内反馈'
+    },
+    kimi: {
+        officialUrl: 'https://www.kimi.com/',
+        entryPath: '真实入口：Kimi 官网/网页端。没有公开内容收录提交接口，打开后粘贴文案测试；反馈走站内帮助中心。',
+        contact: 'Kimi 帮助中心 / 站内反馈'
+    },
+    chatglm: {
+        officialUrl: 'https://chatglm.cn/',
+        entryPath: '真实入口：智谱清言官网/网页端。没有公开民宿收录接口，打开后粘贴文案测试；反馈可走站内反馈或官方联系邮箱。',
+        contact: 'chatglm@zhipuai.cn'
+    }
+};
+
 // =============================================================
 // 主题切换：light / dark / auto（跟随系统）
 // =============================================================
@@ -214,7 +252,7 @@ function refreshAiStatusText() {
     if (!el) return;
     const cfg = getEffectiveAiConfig();
     if (cfg.isBuiltin) {
-        el.textContent = '内建免配置';
+        el.textContent = '服务端代理';
     } else if (LLM_PROVIDERS[cfg.provider]) {
         el.textContent = LLM_PROVIDERS[cfg.provider].name.replace(/^[^\u4e00-\u9fa5A-Za-z]+/, '');
     }
@@ -2729,31 +2767,30 @@ function createSocialCard(template, formData) {
 // 模块 D：小红书爆文「智能改写器」
 //   · 双模式：
 //     - 🌿 本地词库（免费、离线、规则化伪原创）
-//     - 🤖 AI 改写（用户提供 API key，纯前端调 Jina Reader + LLM）
+//     - 🤖 AI 改写（默认走服务端代理；用户也可在当前页面临时填自己的 API key）
 //   · 多次"再洗一版"都不一样
 // =============================================================
 
 // ----- AI 子模块：LLM 提供商配置 -----
-// builtin = 站点预置共享 key,用户零配置即可用。
-// 如果用户填了自己的 key,会优先用用户的(可选其他 provider)。
+// 内建 AI 通过 Netlify Function 代理调用，密钥必须放在服务端环境变量里。
+// 用户自己的 key 只保存在当前页面内存里，刷新后即清除。
 const BUILTIN_AI = {
     provider: 'builtin',
-    apiKey: 'sk-xjlzds0424',
-    endpoint: 'https://interialaiapi.xiaojiaixhs.com/v1/chat/completions',
-    fallbackEndpoint: 'http://43.139.203.146:8050/v1/chat/completions',
+    endpoint: '/api/ai-chat',
     model: 'deepseek-chat'
 };
 
 const LLM_PROVIDERS = {
     builtin: {
-        name: '🎁 内建 AI（免配置）',
-        tag: '🎁 无需 key · 开箱即用',
+        name: '🔒 内建 AI（服务端安全代理）',
+        tag: '🔒 无前端 key · 需配置 CloudBase 云函数环境变量',
         endpoint: BUILTIN_AI.endpoint,
         model: BUILTIN_AI.model,
         keyHint: '无需填写',
         signupUrl: '',
-        desc: '本站预置的共享 AI 接口，DeepSeek 模型，无需注册、无需 API key，直接可用。如需更稳定/隐私可切换到下方自费选项。',
-        noKey: true
+        desc: '本站只调用自己的后端代理，API key 不会出现在浏览器源码里。部署时请在腾讯云 CloudBase 云函数环境变量配置 LLM_API_KEY。',
+        noKey: true,
+        proxy: true
     },
     glm: {
         name: '智谱 GLM-4-Flash',
@@ -2785,32 +2822,24 @@ const LLM_PROVIDERS = {
 };
 
 const AI_CONFIG_KEY = 'mssyt_ai_config_v1';
+let volatileAiConfig = null;
 
 function loadAiConfig() {
-    try {
-        const raw = localStorage.getItem(AI_CONFIG_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed.provider) return null;
-        // noKey provider(如 builtin)允许不存 key
-        const p = LLM_PROVIDERS[parsed.provider];
-        if (!parsed.apiKey && !(p && p.noKey)) return null;
-        return parsed;
-    } catch (_) { return null; }
+    return volatileAiConfig;
 }
 
 function saveAiConfig(provider, apiKey) {
-    localStorage.setItem(AI_CONFIG_KEY, JSON.stringify({ provider, apiKey, savedAt: Date.now() }));
+    volatileAiConfig = { provider, apiKey, savedAt: Date.now() };
 }
 
-// 获取"有效配置":用户配置 > 内建 builtin(零配置兜底)
+// 获取"有效配置":用户临时配置 > 内建服务端代理
 // 任何想用 AI 的地方都应该用这个,而不是 loadAiConfig
 function getEffectiveAiConfig() {
     const user = loadAiConfig();
     if (user && user.provider && (user.apiKey || (LLM_PROVIDERS[user.provider] && LLM_PROVIDERS[user.provider].noKey))) {
         return user;
     }
-    return { provider: BUILTIN_AI.provider, apiKey: BUILTIN_AI.apiKey, isBuiltin: true };
+    return { provider: BUILTIN_AI.provider, apiKey: '', isBuiltin: true };
 }
 
 // 用户是否真正"自定义"了 provider(用来在 UI 区分"内建 / 自配")
@@ -2820,7 +2849,9 @@ function hasUserAiConfig() {
 }
 
 function clearAiConfig() {
-    localStorage.removeItem(AI_CONFIG_KEY);
+    volatileAiConfig = null;
+    try { localStorage.removeItem(AI_CONFIG_KEY); } catch (_) {}
+    try { sessionStorage.removeItem(AI_CONFIG_KEY); } catch (_) {}
 }
 
 // ----- AI 子模块：通过 Jina Reader 抓取 URL 内容 -----
@@ -2924,12 +2955,11 @@ async function callLLMRewrite(provider, apiKey, srcTitle, srcBody, opts) {
 
     let resp;
     try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (!cfg.proxy) headers.Authorization = 'Bearer ' + apiKey;
         resp = await fetch(cfg.endpoint, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + apiKey
-            },
+            headers,
             body: JSON.stringify(body)
         });
     } catch (e) {
@@ -2977,9 +3007,11 @@ async function callLLMRewrite(provider, apiKey, srcTitle, srcBody, opts) {
 // ----- AI 子模块：测试 API key 是否可用 -----
 async function testLLMKey(provider, apiKey) {
     const cfg = LLM_PROVIDERS[provider];
+    const headers = { 'Content-Type': 'application/json' };
+    if (!cfg.proxy) headers.Authorization = 'Bearer ' + apiKey;
     const resp = await fetch(cfg.endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+        headers,
         body: JSON.stringify({
             model: cfg.model,
             messages: [{ role: 'user', content: '回复一个字：好' }],
@@ -3061,9 +3093,11 @@ async function callLLMPolish(provider, apiKey, rawDescription, contextInfo, styl
 
     let resp;
     try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (!cfg.proxy) headers.Authorization = 'Bearer ' + apiKey;
         resp = await fetch(cfg.endpoint, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+            headers,
             body: JSON.stringify(body)
         });
     } catch (e) {
@@ -3560,20 +3594,20 @@ function applyRewriteModeUI() {
         if (sumEl) {
             const p = LLM_PROVIDERS[cfg.provider];
             if (cfg.isBuiltin) {
-                sumEl.innerHTML = `🎁 当前使用 <strong>内建 AI</strong>（免配置·开箱即用） · <a href="#" id="xhsAiKeyChange">用自己的 key</a>`;
+                sumEl.innerHTML = `🔒 当前使用 <strong>服务端安全代理</strong>（前端不暴露 key） · <a href="#" id="xhsAiKeyChange">临时使用自己的 key</a>`;
                 const changeBtn = document.getElementById('xhsAiKeyChange');
                 if (changeBtn) changeBtn.addEventListener('click', (e) => { e.preventDefault(); openAiSetupModal(); });
             } else if (p) {
-                sumEl.innerHTML = `✅ 已配置 <strong>${escapeHtml(p.name)}</strong>（key 已存本地） · <a href="#" id="xhsAiKeyChange">修改</a> · <a href="#" id="xhsAiKeyClear">用回内建</a>`;
+                sumEl.innerHTML = `✅ 已临时配置 <strong>${escapeHtml(p.name)}</strong>（仅本页内存保存，刷新后清除） · <a href="#" id="xhsAiKeyChange">修改</a> · <a href="#" id="xhsAiKeyClear">用回服务端代理</a>`;
                 const changeBtn = document.getElementById('xhsAiKeyChange');
                 const clearBtn = document.getElementById('xhsAiKeyClear');
                 if (changeBtn) changeBtn.addEventListener('click', (e) => { e.preventDefault(); openAiSetupModal(); });
                 if (clearBtn) clearBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    if (confirm('清除自己的 key 后会回退到「内建 AI」,确定吗?')) {
+                    if (confirm('清除当前页面里的临时 key 后会回退到「服务端安全代理」,确定吗?')) {
                         clearAiConfig();
                         applyRewriteModeUI();
-                        flashToast('已切回内建 AI');
+                        flashToast('已切回服务端安全代理');
                     }
                 });
             }
@@ -3591,6 +3625,9 @@ function openAiSetupModal() {
     if (cur) {
         if (sel) sel.value = cur.provider;
         if (keyInput) keyInput.value = cur.apiKey;
+    } else {
+        if (sel) sel.value = 'builtin';
+        if (keyInput) keyInput.value = '';
     }
     updateProviderDescUI();
     modal.style.display = 'flex';
@@ -3643,7 +3680,7 @@ function bindAiSetupModal() {
         const provider = document.getElementById('aiSetupProvider').value;
         const p = LLM_PROVIDERS[provider];
         let key = document.getElementById('aiSetupKey').value.trim();
-        if (p && p.noKey) key = BUILTIN_AI.apiKey;
+        if (p && p.noKey) key = '';
         else if (!key) { status.textContent = '请先填 API key'; status.className = 'ai-setup-status err'; return; }
         status.className = 'ai-setup-status loading';
         status.innerHTML = '<span class="loading-dot"></span> 正在测试连接…';
@@ -3665,13 +3702,13 @@ function bindAiSetupModal() {
         const p = LLM_PROVIDERS[provider];
         let key = document.getElementById('aiSetupKey').value.trim();
         if (p && p.noKey) {
-            key = BUILTIN_AI.apiKey;
+            key = '';
         } else if (!key) {
             status.textContent = '请先填 API key'; status.className = 'ai-setup-status err'; return;
         }
         saveAiConfig(provider, key);
         status.className = 'ai-setup-status ok';
-        status.textContent = '✅ 已保存到本地浏览器';
+        status.textContent = p && p.noKey ? '✅ 已切换到服务端安全代理' : '✅ 已临时保存，仅本页有效';
         setTimeout(() => {
             closeAiSetupModal();
             applyRewriteModeUI();
@@ -3813,7 +3850,7 @@ function initXhsRewriter() {
         txt.focus();
     });
 
-    // 默认选 AI 模式（内建 AI 免配置,直接可用）
+// 默认选 AI 模式（内建服务端代理；不在前端暴露密钥）
     currentRewriteMode = 'ai';
     applyRewriteModeUI();
     bindAiSetupModal();
@@ -3842,7 +3879,8 @@ function renderStars(n) {
 
 // 创建一张平台卡片（含定制文案 + 真实跳转入口 + 复制按钮 + 二维码 + 已提交标记 + 风格/丰富 切换）
 function createPlatformCard(platformId, formData) {
-    const platform = AI_PLATFORMS[platformId];
+    const basePlatform = AI_PLATFORMS[platformId];
+    const platform = basePlatform ? Object.assign({}, basePlatform, REAL_PLATFORM_ENTRY_OVERRIDES[platformId] || {}) : null;
     if (!platform) return null;
 
     // 卡片自身的文案状态（每张卡片独立维护）
@@ -3973,24 +4011,7 @@ function createPlatformCard(platformId, formData) {
     const openBtn = card.querySelector('.btn-open');
     openBtn.addEventListener('click', (ev) => {
         const text = getCurrentText();
-        let targetUrl = platform.officialUrl;
-        const encodedText = encodeURIComponent(text);
-
-        // 针对支持 URL 传参起聊的平台进行预填拼接
-        if (platformId === 'kimi') {
-            targetUrl = `https://kimi.moonshot.cn/?query=${encodedText}`;
-        } else if (platformId === 'qianwen') {
-            targetUrl = `https://tongyi.aliyun.com/?q=${encodedText}`;
-        } else if (platformId === 'doubao') {
-            // 豆包官网主页支持直接带 q 搜索或 chat?q
-            targetUrl = `https://www.doubao.com/?q=${encodedText}`;
-        } else if (platformId === 'yuanbao') {
-            targetUrl = `https://yuanbao.tencent.com/chat?q=${encodedText}`;
-        } else if (platformId === 'deepseek') {
-            targetUrl = `https://chat.deepseek.com/?q=${encodedText}`;
-        } else if (platformId === 'nami') {
-            targetUrl = `https://n.cn/?q=${encodedText}`;
-        }
+        const targetUrl = platform.officialUrl;
 
         // 调用一键复制 + 打开窗口
         copyAndOpen(text, targetUrl, ev.currentTarget, platform.name);
@@ -4194,8 +4215,7 @@ form.addEventListener('submit', (e) => {
 // ==========================================================================
 
 const IMAGE_AI_CONFIG = {
-    apiKey: 'sk-jp-kbZutA2C1ISLydNVU5v2hg3wDkk3pIFgmy44cLZ1',
-    endpoint: 'https://xiaoji.baziapi.site/v1/images/generations',
+    endpoint: '/api/generate-image',
     model: 'gpt-image-2'
 };
 
@@ -4217,7 +4237,6 @@ async function generateMinsuImage(prompt, opts) {
         resp = await fetch(IMAGE_AI_CONFIG.endpoint, {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer ' + IMAGE_AI_CONFIG.apiKey,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -4245,10 +4264,11 @@ async function generateMinsuImage(prompt, opts) {
         const msg = typeof data.error === 'string' ? data.error : (data.error.message || '生成失败');
         throw new Error(msg);
     }
-    if (!data.data || !data.data[0] || !data.data[0].url) {
+    if (!data.data || !data.data[0] || (!data.data[0].url && !data.data[0].b64_json)) {
         throw new Error('返回格式异常,没拿到图片地址');
     }
-    return data.data[0].url;
+    if (data.data[0].url) return data.data[0].url;
+    return 'data:image/png;base64,' + data.data[0].b64_json;
 }
 
 function buildImagePromptFromForm() {
