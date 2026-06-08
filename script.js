@@ -120,7 +120,7 @@ const REAL_PLATFORM_ENTRY_OVERRIDES = {
         contact: '通义站内反馈 / 阿里云客服'
     },
     yuanbao: {
-        officialUrl: 'https://yuanbao.tencent.cn/',
+        officialUrl: 'https://yuanbao.tencent.com/',
         entryPath: '真实入口：腾讯元宝官网/网页端。没有公开商家收录接口，打开后把文案复制到对话或 APP 意见反馈。',
         contact: '腾讯元宝站内反馈 / 腾讯客服'
     },
